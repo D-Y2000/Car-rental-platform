@@ -1,0 +1,12 @@
+[ 
+    {"model": "api_agency.option", "pk": 1, "fields": {"name": "Leather seats"}},
+    {"model": "api_agency.option", "pk": 2, "fields": {"name": "Sunroof"}},
+    {"model": "api_agency.option", "pk": 3, "fields": {"name": "Heated seats"}},
+    {"model": "api_agency.option", "pk": 4, "fields": {"name": "Backup camera"}},
+    {"model": "api_agency.option", "pk": 5, "fields": {"name": "Bluetooth"}},
+    {"model": "api_agency.option", "pk": 6, "fields": {"name": "Apple CarPlay/Android Auto"}},
+    {"model": "api_agency.option", "pk": 7, "fields": {"name": "Electric windows"}},
+    {"model": "api_agency.option", "pk": 8, "fields": {"name": "AC"}},
+    {"model": "api_agency.option", "pk": 9, "fields": {"name": "ABS"}},
+    {"model": "api_agency.option", "pk": 10, "fields": {"name": "ESP"}}
+]

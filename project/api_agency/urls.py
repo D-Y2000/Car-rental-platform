@@ -6,4 +6,8 @@ urlpatterns = [
     path('branches/',branches),
     path('branches/<int:pk>/',branch_details),
     path('agencies/<int:pk>/branches/',agency_branches),
+    path('vehicles/',vehicles),
+    path('vehicle/<int:pk>/',vehicle_details),
+    path('makes/',vehicle_makes),
+    path('makes/<int:pk>/models/',vehicle_models),
 ]

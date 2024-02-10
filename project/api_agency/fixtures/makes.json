@@ -1,0 +1,466 @@
+[
+    {
+        "model": "api_agency.make", "pk": "1",
+        "fields": { "name": "Abarth"
+    }},
+    {
+        "model": "api_agency.make", "pk": "2",
+        "fields": { "name": "AC"
+    }},
+    {
+        "model": "api_agency.make", "pk": "3",
+        "fields": { "name": "Acura"
+    }},
+    {
+        "model": "api_agency.make", "pk": "4",
+        "fields": { "name": "Aixam"
+    }},
+    {
+        "model": "api_agency.make", "pk": "5",
+        "fields": { "name": "Alfa Romeo"
+    }},
+    {
+        "model": "api_agency.make", "pk": "6",
+        "fields": { "name": "ALPINA"
+    }},
+    {
+        "model": "api_agency.make", "pk": "7",
+        "fields": { "name": "Artega"
+    }},
+    {
+        "model": "api_agency.make", "pk": "8",
+        "fields": { "name": "Asia Motors"
+    }},
+    {
+        "model": "api_agency.make", "pk": "9",
+        "fields": { "name": "Aston Martin"
+    }},
+    {
+        "model": "api_agency.make", "pk": "10",
+        "fields": { "name": "Audi"
+    }},
+    {
+        "model": "api_agency.make", "pk": "11",
+        "fields": { "name": "Austin"
+    }},
+    {
+        "model": "api_agency.make", "pk": "12",
+        "fields": { "name": "Austin Healey"
+    }},
+    {
+        "model": "api_agency.make", "pk": "13",
+        "fields": { "name": "Bentley"
+    }},
+    {
+        "model": "api_agency.make", "pk": "14",
+        "fields": { "name": "BMW"
+    }},
+    {
+        "model": "api_agency.make", "pk": "15",
+        "fields": { "name": "Borgward"
+    }},
+    {
+        "model": "api_agency.make", "pk": "16",
+        "fields": { "name": "Brilliance"
+    }},
+    {
+        "model": "api_agency.make", "pk": "17",
+        "fields": { "name": "Bugatti"
+    }},
+    {
+        "model": "api_agency.make", "pk": "18",
+        "fields": { "name": "Buick"
+    }},
+    {
+        "model": "api_agency.make", "pk": "19",
+        "fields": { "name": "Cadillac"
+    }},
+    {
+        "model": "api_agency.make", "pk": "20",
+        "fields": { "name": "Casalini"
+    }},
+    {
+        "model": "api_agency.make", "pk": "21",
+        "fields": { "name": "Caterham"
+    }},
+    {
+        "model": "api_agency.make", "pk": "22",
+        "fields": { "name": "Chatenet"
+    }},
+    {
+        "model": "api_agency.make", "pk": "23",
+        "fields": { "name": "Chevrolet"
+    }},
+    {
+        "model": "api_agency.make", "pk": "24",
+        "fields": { "name": "Chrysler"
+    }},
+    {
+        "model": "api_agency.make", "pk": "25",
+        "fields": { "name": "Citroën"
+    }},
+    {
+        "model": "api_agency.make", "pk": "26",
+        "fields": { "name": "Cobra"
+    }},
+    {
+        "model": "api_agency.make", "pk": "27",
+        "fields": { "name": "Corvette"
+    }},
+    {
+        "model": "api_agency.make", "pk": "28",
+        "fields": { "name": "Cupra"
+    }},
+    {
+        "model": "api_agency.make", "pk": "29",
+        "fields": { "name": "Dacia"
+    }},
+    {
+        "model": "api_agency.make", "pk": "30",
+        "fields": { "name": "Daewoo"
+    }},
+    {
+        "model": "api_agency.make", "pk": "31",
+        "fields": { "name": "Daihatsu"
+    }},
+    {
+        "model": "api_agency.make", "pk": "32",
+        "fields": { "name": "DeTomaso"
+    }},
+    {
+        "model": "api_agency.make", "pk": "33",
+        "fields": { "name": "Dodge"
+    }},
+    {
+        "model": "api_agency.make", "pk": "34",
+        "fields": { "name": "Donkervoort"
+    }},
+    {
+        "model": "api_agency.make", "pk": "35",
+        "fields": { "name": "DS Automobiles"
+    }},
+    {
+        "model": "api_agency.make", "pk": "36",
+        "fields": { "name": "Ferrari"
+    }},
+    {
+        "model": "api_agency.make", "pk": "37",
+        "fields": { "name": "Fiat"
+    }},
+    {
+        "model": "api_agency.make", "pk": "38",
+        "fields": { "name": "Fisker"
+    }},
+    {
+        "model": "api_agency.make", "pk": "39",
+        "fields": { "name": "Ford"
+    }},
+    {
+        "model": "api_agency.make", "pk": "40",
+        "fields": { "name": "GAC Gonow"
+    }},
+    {
+        "model": "api_agency.make", "pk": "41",
+        "fields": { "name": "Gemballa"
+    }},
+    {
+        "model": "api_agency.make", "pk": "42",
+        "fields": { "name": "GMC"
+    }},
+    {
+        "model": "api_agency.make", "pk": "43",
+        "fields": { "name": "Grecav"
+    }},
+    {
+        "model": "api_agency.make", "pk": "44",
+        "fields": { "name": "Hamann"
+    }},
+    {
+        "model": "api_agency.make", "pk": "45",
+        "fields": { "name": "Holden"
+    }},
+    {
+        "model": "api_agency.make", "pk": "46",
+        "fields": { "name": "Honda"
+    }},
+    {
+        "model": "api_agency.make", "pk": "47",
+        "fields": { "name": "Hummer"
+    }},
+    {
+        "model": "api_agency.make", "pk": "48",
+        "fields": { "name": "Hyundai"
+    }},
+    {
+        "model": "api_agency.make", "pk": "49",
+        "fields": { "name": "Infiniti"
+    }},
+    {
+        "model": "api_agency.make", "pk": "50",
+        "fields": { "name": "Isuzu"
+    }},
+    {
+        "model": "api_agency.make", "pk": "51",
+        "fields": { "name": "Iveco"
+    }},
+    {
+        "model": "api_agency.make", "pk": "52",
+        "fields": { "name": "Jaguar"
+    }},
+    {
+        "model": "api_agency.make", "pk": "53",
+        "fields": { "name": "Jeep"
+    }},
+    {
+        "model": "api_agency.make", "pk": "54",
+        "fields": { "name": "Kia"
+    }},
+    {
+        "model": "api_agency.make", "pk": "55",
+        "fields": { "name": "Koenigsegg"
+    }},
+    {
+        "model": "api_agency.make", "pk": "56",
+        "fields": { "name": "KTM"
+    }},
+    {
+        "model": "api_agency.make", "pk": "57",
+        "fields": { "name": "Lada"
+    }},
+    {
+        "model": "api_agency.make", "pk": "58",
+        "fields": { "name": "Lamborghini"
+    }},
+    {
+        "model": "api_agency.make", "pk": "59",
+        "fields": { "name": "Lancia"
+    }},
+    {
+        "model": "api_agency.make", "pk": "60",
+        "fields": { "name": "Land Rover"
+    }},
+    {
+        "model": "api_agency.make", "pk": "61",
+        "fields": { "name": "Landwind"
+    }},
+    {
+        "model": "api_agency.make", "pk": "62",
+        "fields": { "name": "Lexus"
+    }},
+    {
+        "model": "api_agency.make", "pk": "63",
+        "fields": { "name": "Ligier"
+    }},
+    {
+        "model": "api_agency.make", "pk": "64",
+        "fields": { "name": "Lincoln"
+    }},
+    {
+        "model": "api_agency.make", "pk": "65",
+        "fields": { "name": "Lotus"
+    }},
+    {
+        "model": "api_agency.make", "pk": "66",
+        "fields": { "name": "Mahindra"
+    }},
+    {
+        "model": "api_agency.make", "pk": "67",
+        "fields": { "name": "Maserati"
+    }},
+    {
+        "model": "api_agency.make", "pk": "68",
+        "fields": { "name": "Maybach"
+    }},
+    {
+        "model": "api_agency.make", "pk": "69",
+        "fields": { "name": "Mazda"
+    }},
+    {
+        "model": "api_agency.make", "pk": "70",
+        "fields": { "name": "McLaren"
+    }},
+    {
+        "model": "api_agency.make", "pk": "71",
+        "fields": { "name": "Mercedes-Benz"
+    }},
+    {
+        "model": "api_agency.make", "pk": "72",
+        "fields": { "name": "MG"
+    }},
+    {
+        "model": "api_agency.make", "pk": "73",
+        "fields": { "name": "Microcar"
+    }},
+    {
+        "model": "api_agency.make", "pk": "74",
+        "fields": { "name": "MINI"
+    }},
+    {
+        "model": "api_agency.make", "pk": "75",
+        "fields": { "name": "Mitsubishi"
+    }},
+    {
+        "model": "api_agency.make", "pk": "76",
+        "fields": { "name": "Morgan"
+    }},
+    {
+        "model": "api_agency.make", "pk": "77",
+        "fields": { "name": "Nissan"
+    }},
+    {
+        "model": "api_agency.make", "pk": "78",
+        "fields": { "name": "NSU"
+    }},
+    {
+        "model": "api_agency.make", "pk": "79",
+        "fields": { "name": "Oldsmobile"
+    }},
+    {
+        "model": "api_agency.make", "pk": "80",
+        "fields": { "name": "Opel"
+    }},
+    {
+        "model": "api_agency.make", "pk": "81",
+        "fields": { "name": "Pagani"
+    }},
+    {
+        "model": "api_agency.make", "pk": "82",
+        "fields": { "name": "Peugeot"
+    }},
+    {
+        "model": "api_agency.make", "pk": "83",
+        "fields": { "name": "Piaggio"
+    }},
+    {
+        "model": "api_agency.make", "pk": "84",
+        "fields": { "name": "Plymouth"
+    }},
+    {
+        "model": "api_agency.make", "pk": "85",
+        "fields": { "name": "Polestar"
+    }},
+    {
+        "model": "api_agency.make", "pk": "86",
+        "fields": { "name": "Pontiac"
+    }},
+    {
+        "model": "api_agency.make", "pk": "87",
+        "fields": { "name": "Porsche"
+    }},
+    {
+        "model": "api_agency.make", "pk": "88",
+        "fields": { "name": "Proton"
+    }},
+    {
+        "model": "api_agency.make", "pk": "89",
+        "fields": { "name": "Renault"
+    }},
+    {
+        "model": "api_agency.make", "pk": "90",
+        "fields": { "name": "Rolls-Royce"
+    }},
+    {
+        "model": "api_agency.make", "pk": "91",
+        "fields": { "name": "Rover"
+    }},
+    {
+        "model": "api_agency.make", "pk": "92",
+        "fields": { "name": "Ruf"
+    }},
+    {
+        "model": "api_agency.make", "pk": "93",
+        "fields": { "name": "Saab"
+    }},
+    {
+        "model": "api_agency.make", "pk": "94",
+        "fields": { "name": "Santana"
+    }},
+    {
+        "model": "api_agency.make", "pk": "95",
+        "fields": { "name": "Seat"
+    }},
+    {
+        "model": "api_agency.make", "pk": "96",
+        "fields": { "name": "Skoda"
+    }},
+    {
+        "model": "api_agency.make", "pk": "97",
+        "fields": { "name": "Smart"
+    }},
+    {
+        "model": "api_agency.make", "pk": "98",
+        "fields": { "name": "speedART"
+    }},
+    {
+        "model": "api_agency.make", "pk": "99",
+        "fields": { "name": "Spyker"
+    }},
+    {
+        "model": "api_agency.make", "pk": "100",
+        "fields": { "name": "Ssangyong"
+    }},
+    {
+        "model": "api_agency.make", "pk": "101",
+        "fields": { "name": "Subaru"
+    }},
+    {
+        "model": "api_agency.make", "pk": "102",
+        "fields": { "name": "Suzuki"
+    }},
+    {
+        "model": "api_agency.make", "pk": "103",
+        "fields": { "name": "Talbot"
+    }},
+    {
+        "model": "api_agency.make", "pk": "104",
+        "fields": { "name": "Tata"
+    }},
+    {
+        "model": "api_agency.make", "pk": "105",
+        "fields": { "name": "TECHART"
+    }},
+    {
+        "model": "api_agency.make", "pk": "106",
+        "fields": { "name": "Tesla"
+    }},
+    {
+        "model": "api_agency.make", "pk": "107",
+        "fields": { "name": "Toyota"
+    }},
+    {
+        "model": "api_agency.make", "pk": "108",
+        "fields": { "name": "Trabant"
+    }},
+    {
+        "model": "api_agency.make", "pk": "109",
+        "fields": { "name": "Triumph"
+    }},
+    {
+        "model": "api_agency.make", "pk": "110",
+        "fields": { "name": "TVR"
+    }},
+    {
+        "model": "api_agency.make", "pk": "111",
+        "fields": { "name": "Volkswagen"
+    }},
+    {
+        "model": "api_agency.make", "pk": "112",
+        "fields": { "name": "Volvo"
+    }},
+    {
+        "model": "api_agency.make", "pk": "113",
+        "fields": { "name": "Wartburg"
+    }},
+    {
+        "model": "api_agency.make", "pk": "114",
+        "fields": { "name": "Westfield"
+    }},
+    {
+        "model": "api_agency.make", "pk": "115",
+        "fields": { "name": "Wiesmann"
+    }},
+    {
+        "model": "api_agency.make", "pk": "116",
+        "fields": { "name": "Other"
+    }}
+]
