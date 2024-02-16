@@ -4,17 +4,13 @@ from django.contrib.auth.password_validation import validate_password
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=User
-        fields="__all__"
-
-class AgencySerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True,
      required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True,required=True)
     class Meta:
-        model=Agency
-        fields=["id","name","email","phone_number","bio","license_doc","photo","password","password2"]
+        model=User
+        fields=["id","email","password","password2"]
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError(
@@ -22,13 +18,29 @@ class AgencySerializer(serializers.ModelSerializer):
         return attrs
     def create(self, validated_data):
         validated_data.pop('password2')
+        user=User.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+
+
+class AgencySerializer(serializers.ModelSerializer):
+    user=UserSerializer()
+    class Meta:
+        model=Agency
+        fields=["user","name","phone_number","bio","license_doc","photo",]
+    
+    def create(self, validated_data):
+        user_data=validated_data.pop('user')
+        user=UserSerializer.create(self,user_data)
+        user.is_agency=True
+        user.save()
+        validated_data['user']=user
         agency=Agency.objects.create(**validated_data)
-        agency.set_password(validated_data['password'])
-        agency.is_agency=True
         agency.save()
         return agency
-
-
+    
 class AgencyDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model=Agency
@@ -39,6 +51,7 @@ class BranchSerializer(serializers.ModelSerializer):
     class Meta:
         model=Branch
         fields="__all__"
+
         
 class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,3 +59,12 @@ class VehicleSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 
+class MakeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Make
+        fields="__all__"
+
+class ModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Model
+        fields="__all__"

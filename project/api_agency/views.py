@@ -67,7 +67,7 @@ def branches(request):
 @api_view(['GET','PUT','DELETE'])
 def branch_details(request,pk):
     try:
-        branch=branch.objects.get(pk=pk)
+        branch=Branch.objects.get(pk=pk)
     except branch.DoesNotExist:
         return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
     
@@ -93,5 +93,24 @@ def agency_branches(request,pk):
     
     serializer=BranchSerializer(branches,many=True)
     return Response(serializer.data,status= status.HTTP_200_OK)
+
+
+
+
+@api_view(['GET'])
+def vehicles_makes(request):
+    makes=Make.objects.all()
+    serializer=MakeSerializer(makes,many=True)
+
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def vehicles_models(request,pk):
+    models=Model.objects.filter(make_id=pk)
+    serializer=ModelSerializer(models,many=True)
+
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
 
 
