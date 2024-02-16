@@ -33,6 +33,15 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_agency = models.BooleanField(default=False)
+
+    ROLE_CHOICES = (
+        ('admin', 'Admin'),
+        ('agency_owner', 'Agency Owner'),
+        ('agency_admin', 'Agency Admin'),
+        ('agency_employer', 'Agency Employer'),
+        ('default', 'Default'),
+    )
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='default')
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -42,17 +51,27 @@ class User(AbstractBaseUser,PermissionsMixin):
     def __str__(self):
         return f'{self.email}'
 
+
+# the agency model just a profile of agency that can ber rolled by agency owner which is just a user with role agency_owner 
+# the agency need to be validate by the admin (Platform Owner) to be able to use the system
 class Agency(models.Model):
+    
     user=models.OneToOneField(User,on_delete=models.CASCADE)
+    is_validated = models.BooleanField(default=False)
+
     name = models.CharField(max_length=150,null=False,blank=False)
     phone_number=models.CharField(max_length=14,)
-    license_doc=models.ImageField(null=True,blank=True)
-    photo=models.ImageField(null=True,blank=True)
     bio=models.TextField(null=True,blank=True)
 
+    license_doc=models.ImageField(null=True,blank=True)
+    photo=models.ImageField(null=True,blank=True)
 
 
 
+# Note that Agency Class is just a profile of agency
+# an Agency can have many branches, each have a different location and different rate
+# after agency validation (Validate) a main branch gonna be created , related to this agency with same info
+# Agency admin can create as mlany branches as he want
 class Branch(models.Model):
     agency=models.ForeignKey(Agency,on_delete=models.CASCADE,)
     name=models.TextField(max_length=150)
