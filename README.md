@@ -2,7 +2,34 @@
 
 A Platform that allow individuals to rent cars from multiple agencies
 
-# API
+## Instalation
+
+### setup envirnement
+
+    # clone project
+    git clone https://github.com/D-Y2000/Car-rental-platform.git
+    cd project
+
+    # create envirnement
+    py -m venv env
+
+    # activate env
+    env\Script\activate
+
+    # install requirements
+    pip install requirements.txt
+
+    # setup db
+    py manage.py makemirations
+    py manage.py migrate
+
+    # create admin user (superuser)
+    py manage.py createsuperuser
+
+    # run localhost
+    py manage.py runserver
+
+## About API
 
 ### GET all agencies
 
