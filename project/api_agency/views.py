@@ -84,7 +84,7 @@ def branch_details(request,pk):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     else:
         branch.delete()
-        return Response("Agency deleted",status=status.HTTP_202_ACCEPTED)
+        return Response("Branch deleted",status=status.HTTP_202_ACCEPTED)
     
 @api_view(['GET'])
 def agency_branches(request,pk):

@@ -42,15 +42,22 @@ Send **GET** request to:
 **result**
 
     {
+        "id": 1,
         "user": {
             "id": 2,
-            "email": "daichekkal@gmail.com"
+            "email": ""
         },
-        "name": "dxk cars",
-        "phone_number": "123456",
-        "bio": null,
-        "license_doc": null,
-        "photo": null
+        "name": "",
+        "phone_number": "",
+        "bio": "",
+        "license_doc": "",
+        "photo": "",
+        "email": "",
+        "location": "",
+        "address": "",
+        "website": "",
+        "is_validated": false,
+        "created_at": ""
     }
 
 ### Create user (agency owner) + agency (profile)
@@ -65,10 +72,17 @@ Send **Post** request to:
 
     {
         "user": {
-            "email": "daichekkal@gmail.com"
-            "password": "password_123",
-            "password2": "password_123",
+            "email": "email@example.com"
+            "password": "........."
+            "password2": "........."
         },
-        "name": "",
-        "phone_number": "",
+        "name": "Name",
+        "phone_number": "00000000",
+        "bio": "Hello, Wolrd",
+        "license_doc": ImageURL,
+        "photo": ImageURL,
+        "email": "company@contact.com",
+        "location": "Algeria",
+        "address": "Alger",
+        "website": "www.company.com"
     }
