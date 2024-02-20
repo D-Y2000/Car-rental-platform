@@ -32,17 +32,15 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    is_agency = models.BooleanField(default=False)
 
     ROLE_CHOICES = (
         ('admin', 'Admin'),
-        ('agency_owner', 'Agency Owner'),
         ('agency_admin', 'Agency Admin'),
         ('agency_employer', 'Agency Employer'),
         ('default', 'Default'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='default')
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
