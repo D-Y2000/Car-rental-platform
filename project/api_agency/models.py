@@ -40,6 +40,7 @@ class User(AbstractBaseUser,PermissionsMixin):
         ('default', 'Default'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='default')
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
@@ -48,22 +49,55 @@ class User(AbstractBaseUser,PermissionsMixin):
     def __str__(self):
         return f'{self.email}'
 
+
+# the agency model just a profile of agency that can ber rolled by agency owner which is just a user with role agency_owner 
+# the agency need to be validate by the admin (Platform Owner) to be able to use the system
 class Agency(models.Model):
-    user=models.OneToOneField(User,on_delete=models.CASCADE)
-    name = models.CharField(max_length=150,null=False,blank=False)
-    phone_number=models.CharField(max_length=14,)
-    license_doc=models.ImageField(null=True,blank=True)
-    photo=models.ImageField(null=True,blank=True)
-    bio=models.TextField(null=True,blank=True)
+    
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    is_validated = models.BooleanField(default=False)
+
+    name = models.CharField(max_length=150, null=False, blank=False)
+    bio = models.TextField(blank=True)
+    
+    # contact info
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=14, blank=True)
+    website = models.URLField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+
+
+    license_doc = models.ImageField(null=True,blank=True)
+    photo = models.ImageField(null=True,blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
 
 
-
+# Note that Agency Class is just a profile of agency
+# an Agency can have many branches, each have a different location and different rate
+# after agency validation (Validate) a main branch gonna be created , related to this agency with same info
+# Agency admin can create as mlany branches as he want
 class Branch(models.Model):
-    agency=models.ForeignKey(Agency,on_delete=models.CASCADE,)
-    name=models.TextField(max_length=150)
-    location=models.CharField(max_length=30,null=True,blank=True)
-    rate=models.DecimalField(decimal_places=1,max_digits=1,default=0)
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,)
+    
+    name = models.CharField(max_length=150)
+    location = models.CharField(max_length=30, blank=True)
+
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=14, blank=True)
+
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.agency.name}"
 
 class Make(models.Model):
     name = models.CharField(max_length=100)

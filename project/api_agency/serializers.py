@@ -29,7 +29,20 @@ class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
     class Meta:
         model=Agency
-        fields=["user","name","phone_number","bio","license_doc","photo",]
+        fields=["id",
+                "user",
+                "name",
+                "phone_number",
+                "bio",
+                "license_doc",
+                "photo",
+                "email",
+                "location",
+                "address",
+                "website",
+                "is_validated",
+                "created_at",
+                ]
     
     def create(self, validated_data):
         user_data=validated_data.pop('user')
@@ -45,7 +58,20 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
     class Meta:
         model=Agency
-        fields=["name","email","phone_number","bio","license_doc","photo",]
+        fields=["id",
+                "user",
+                "name",
+                "phone_number",
+                "bio",
+                "license_doc",
+                "photo",
+                "email",
+                "location",
+                "address",
+                "website",
+                "is_validated",
+                "created_at",
+                ]
 
 
 class BranchSerializer(serializers.ModelSerializer):
