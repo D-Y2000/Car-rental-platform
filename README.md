@@ -86,3 +86,50 @@ Send **Post** request to:
         "address": "Alger",
         "website": "www.company.com"
     }
+### Login user 
+**api**
+
+    [BASE_URL]/api_agency/login/
+**required params**
+    {
+        "username":"adr@gmail.com",
+        "password":"password"   
+    }
+### List and create branch for the agency
+**api**
+    [BASE_URL]/api_agency/branches/
+**required params**
+    Token in request header
+    {
+        "name":"Branch name"
+    }
+### Edit agency Infos
+**api**
+
+    [BASE_URL]/api_agency/agencies/<int:pk>(agency_id)/
+**required params**
+    Token in request header
+    {
+        "name": "Agency name",
+        "phone_number": "phone number"
+    }
+### Update branch
+**api**
+
+    [BASE_URL]/api_agency/branches/<int:pk>(branch_id)/
+
+**required params**
+    Token in request header
+    {
+    "name":" Branch"
+}
+
+### logout user 
+**api**
+
+    [BASE_URL]/api_agency/logout/
+
+
+**required params**
+    Token in request header
+    
