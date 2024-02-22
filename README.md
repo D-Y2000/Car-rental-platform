@@ -91,15 +91,18 @@ Send **Post** request to:
 
     [BASE_URL]/api_agency/login/
 **required params**
+    
     {
         "username":"adr@gmail.com",
         "password":"password"   
     }
 ### List and create branch for the agency
 **api**
+    
     [BASE_URL]/api_agency/branches/
 **required params**
     Token in request header
+    
     {
         "name":"Branch name"
     }
@@ -109,6 +112,7 @@ Send **Post** request to:
     [BASE_URL]/api_agency/agencies/<int:pk>(agency_id)/
 **required params**
     Token in request header
+    
     {
         "name": "Agency name",
         "phone_number": "phone number"
@@ -120,6 +124,7 @@ Send **Post** request to:
 
 **required params**
     Token in request header
+    
     {
     "name":" Branch"
 }
@@ -133,3 +138,60 @@ Send **Post** request to:
 **required params**
     Token in request header
     
+### List and create vehicles
+**api**
+
+    [BASE_URL]/api_agency/vehicles/
+**required params**
+    Token required for creation
+
+    {
+        "make":"make",
+        "model":"model",
+        "year": "2015",
+        "mileage": null,
+        "current_location": null,
+        "color": null,
+        "seats": null,
+        "doors": null,
+        "description": null,
+        "price": "15000.00",
+        "created_at": "2024-02-21T15:02:05.436416Z",
+        "engine": null,
+        "transmission": null,
+        "type": null,
+        "options": []
+        }
+
+
+### Vehicle Details(retreive,update,delete)
+**api**
+
+     [BASE_URL]/api_agency/vehicles/<int:pk>(vehicle_id)/
+
+**required params**
+Token required for update,delete
+
+    {
+    "make":"make",
+    "model":"model",
+    "year": "2015",
+    "mileage": null,
+    "current_location": null,
+    "color": null,
+    "seats": null,
+    "doors": null,
+    "description": null,
+    "price": "15000.00",
+    "created_at": "2024-02-21T15:02:05.436416Z",
+    "engine": null,
+    "transmission": null,
+    "type": null,
+    "options": []
+    }
+
+
+### agency vehicles (list)
+**api**
+
+    [BASE_URL]/api_agency/agencies/<int:pk>(agency_id)/vehicles/    
