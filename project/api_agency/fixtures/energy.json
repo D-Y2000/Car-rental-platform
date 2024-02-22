@@ -1,0 +1,5 @@
+[ 
+    {"model": "api_agency.energy", "pk": 1, "fields": {"name": "Petrol"}},
+    {"model": "api_agency.energy", "pk": 2, "fields": {"name": "Diesel"}},
+    {"model": "api_agency.energy", "pk": 3, "fields": {"name": "GPL"}}
+]

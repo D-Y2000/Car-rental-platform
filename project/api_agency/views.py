@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from api_agency.permissions import *
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
 from rest_framework import generics
+from rest_framework.authtoken.views import *
 # Create your views here.
 
 
@@ -120,30 +121,64 @@ class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
 class Branches(generics.ListCreateAPIView):
     queryset=Branch.objects.all()
     serializer_class=BranchSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly]
+    permission_classes=[IsAgencyOrReadOnly]
 
 
 
-class BranchDetails(generics.RetrieveUpdateDestroyAPIView):
+class BranchDetails(generics.RetrieveAPIView):
     queryset=Branch.objects.all()
     serializer_class=BranchSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyBranchOwnerOrReadOnly]
+    permission_classes=[permissions.AllowAny]
 
 
 class AgencyBranches(generics.ListAPIView):
     serializer_class=BranchSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyBranchOwnerOrReadOnly]
+    permission_classes=[IsAuthenticatedOrReadOnly,CanCreateBranches]
 
     def get_queryset(self):
-        pk=self.request.kwgrs.get('pk')
+        pk= self.kwargs['pk']
+        branches=Branch.objects.filter(agency=pk)
+        return branches
+    
+
+class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class=BranchSerializer
+    permission_classes=[IsAuthenticatedOrReadOnly,CanCreateBranches,CanRudBranches]
+
+    def get_queryset(self):
+        pk= self.kwargs['pk']
         branches=Branch.objects.filter(agency=pk)
         return branches
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAgency])
+def agencyProfile(request):
+    user=User.objects.get(auth_token=request.auth)
+    agency=Agency.objects.get(user=user)
+    serializer=AgencySerializer(agency)
+    return Response(serializer.data,status=status.HTTP_200_OK)
 
 
 
+    
 
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def logOut(request):
+    token = Token.objects.get(key=request.auth)
+    user=token.user
+    if user:
+        token.delete()
+        return Response({'info':'Succefully logged Out!'},status=status.HTTP_200_OK)
+    else:
+        return Response('Expired Token',status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+#----------------------------VEHICLES-------------------#
+#LIST vehicles and models 
 @api_view(['GET'])
 def vehicles_makes(request):
     makes=Make.objects.all()
@@ -160,18 +195,27 @@ def vehicles_models(request,pk):
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def logOut(request):
-    token = Token.objects.get(key=request.auth)
-    user=token.user
-    if user:
-        token.delete()
-        return Response({'info':'Succefully logged Out!'},status=status.HTTP_200_OK)
-    else:
-        return Response('Expired Token',status=status.HTTP_400_BAD_REQUEST)
-    
+#VEHICLES MANAGEMENT FOR AGENCIES
+
+
+class ListVehicles(generics.ListCreateAPIView):
+    serializer_class=VehicleSerializer
+    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
+    queryset=Vehicle.objects.all()
+
+class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class=VehicleSerializer
+    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner,CanRudVehicles]
+    queryset=Vehicle.objects.all()
 
 
 
-
+class AgencyVehicles(generics.ListAPIView):
+    serializer_class=VehicleSerializer
+    permission_classes=[permissions.AllowAny]
+    queryset=Vehicle.objects.all()
+    def get_queryset(self):
+        pk= self.kwargs['pk']
+        vehicles=Vehicle.objects.filter(owned_by__agency=pk)
+        return vehicles
+        

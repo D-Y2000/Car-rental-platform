@@ -54,7 +54,7 @@ class User(AbstractBaseUser,PermissionsMixin):
 # the agency need to be validate by the admin (Platform Owner) to be able to use the system
 class Agency(models.Model):
     
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='my_agency')
     is_validated = models.BooleanField(default=False)
 
     name = models.CharField(max_length=150, null=False, blank=False)
@@ -84,7 +84,7 @@ class Agency(models.Model):
 # after agency validation (Validate) a main branch gonna be created , related to this agency with same info
 # Agency admin can create as mlany branches as he want
 class Branch(models.Model):
-    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,)
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name='my_branches')
     
     name = models.CharField(max_length=150)
     location = models.CharField(max_length=30, blank=True)
@@ -98,6 +98,13 @@ class Branch(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.agency.name}"
+    
+
+
+
+
+
+    
 
 class Make(models.Model):
     name = models.CharField(max_length=100)
@@ -144,7 +151,7 @@ class Option(models.Model):
 
 
 class Vehicle(models.Model):
-    owned_by = models.OneToOneField(Branch, on_delete=models.CASCADE, related_name='my_cars')
+    owned_by = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='my_cars')
     make=models.ForeignKey(Make,on_delete=models.SET_NULL,null=True)
     model=models.ForeignKey(Model,on_delete=models.SET_NULL,null=True)
     year=models.CharField(max_length=4)
@@ -175,7 +182,7 @@ class Vehicle(models.Model):
 
     # Methods
     def get_title(self):
-        return f'{self.model.get_vehicle_name()} {self.year}'
+        return f'{self.model} {self.year}'
     def get_price(self):
         return f'{self.price} DZD'
     
