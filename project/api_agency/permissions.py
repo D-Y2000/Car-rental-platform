@@ -12,6 +12,7 @@ class IsAgency(permissions.BasePermission):
         return user.role == 'agency_admin'
 
 
+
 class IsAgencyOrReadOnly(permissions.BasePermission):    
     def has_object_permission(self, request, view, obj):
         
@@ -20,6 +21,7 @@ class IsAgencyOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         user=User.objects.get(auth_token=request.auth)
+        print(user)
         return user.role=='agency_admin'
     
 
@@ -35,13 +37,21 @@ class IsAgencyOwnerOrReadOnly(permissions.BasePermission):
         user=User.objects.get(auth_token=request.auth)
         return obj.user == user
     
-
-
-class IsAgencyBranchOwnerOrReadOnly(permissions.BasePermission):
-
+    
+class CanCreateBranches(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
+        
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        user=User.objects.get(auth_token=request.auth)
+        print(user)
+        return user.role=='agency_admin'
 
 
+class CanRudBranches(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
         
@@ -51,8 +61,55 @@ class IsAgencyBranchOwnerOrReadOnly(permissions.BasePermission):
         return obj.agency.user == user
     
 
-class IsAgencyBranchOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+class IsBranchOwner(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
         user=User.objects.get(auth_token=request.auth)
-        # print(obj.agency.user == user)
-        return obj.agency.user == user
+        agency=Agency.objects.get(user=user)
+        branches=Branch.objects.filter(agency=agency)
+        if branches.exists():
+            return True
+        else:
+            return False
+
+
+
+
+# class IsAgencyBranchOwnerOrReadOnly(permissions.BasePermission):
+
+#     def has_object_permission(self, request, view, obj):
+
+
+#         if request.method in permissions.SAFE_METHODS:
+#             return True
+        
+#         user=User.objects.get(auth_token=request.auth)
+
+
+#         return obj.agency.user == user
+    
+# class IsCarOwnerOrReadOnly(permissions.BasePermission):
+#     def has_object_permission(self, request, view, obj):
+#         if request.method in permissions.SAFE_METHODS:
+#             return True
+#         user=User.objects.get(auth_token=request.auth)
+#         return obj.owned_by.agency.user==user
+    
+
+# class IsAgencyBranchOwner(permissions.BasePermission):
+#     def has_object_permission(self, request, view, obj):
+#         user=User.objects.get(auth_token=request.auth)
+#         # print(obj.agency.user == user)
+#         return obj.agency.user == user
+    
+
+
+
+
+class CanRudVehicles(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        user=User.objects.get(auth_token=request.auth)
+        return obj.owned_by.agency.user==user

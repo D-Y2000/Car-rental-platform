@@ -45,13 +45,19 @@ class AgencySerializer(serializers.ModelSerializer):
                 ]
     
     def create(self, validated_data):
+        #user account creation
         user_data=validated_data.pop('user')
         user=UserSerializer.create(self,user_data)
         user.role='agency_admin'
         user.save()
         validated_data['user']=user
+        #agency creation
         agency=Agency.objects.create(**validated_data)
         agency.save()
+        #create a branch for the agency
+        branch=Branch.objects.create(agency=agency,name=f'{agency.name} branch')
+        branch.save()
+
         return agency
     
 class AgencyDetailSerializer(serializers.ModelSerializer):
@@ -90,10 +96,22 @@ class BranchSerializer(serializers.ModelSerializer):
         return branch
         
 class VehicleSerializer(serializers.ModelSerializer):
+    make=serializers.StringRelatedField
+    model=serializers.StringRelatedField
+    owned_by=BranchSerializer(read_only=True)
     class Meta:
         model=Vehicle
         fields="__all__"
 
+    def create(self, validated_data):
+        token =  self.context['request'].auth
+        user = user=User.objects.get(auth_token=token)
+        agency=Agency.objects.get(user=user)
+        branch=Branch.objects.filter(agency=agency)
+        validated_data['owned_by']=branch.first()
+        vehicle=Vehicle.objects.create(**validated_data)
+        vehicle.save()
+        return vehicle
 
 class MakeSerializer(serializers.ModelSerializer):
     class Meta:
