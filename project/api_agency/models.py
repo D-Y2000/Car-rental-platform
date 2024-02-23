@@ -117,7 +117,7 @@ class Model(models.Model):
     name = models.CharField(max_length=100, help_text='Model')
     series = models.CharField(max_length=100, help_text='Model', blank=True, null=True)
     def __str__(self) -> str:
-        return f'{self.make_id.name} {self.name}'
+        return f'{self.name}'
     def get_vehicle_name(self):
         return f'{self.make_id.name} {self.name}'
 
@@ -182,7 +182,7 @@ class Vehicle(models.Model):
 
     # Methods
     def get_title(self):
-        return f'{self.model} {self.year}'
+        return f'{self.make} {self.model} {self.year}'
     def get_price(self):
         return f'{self.price} DZD'
     

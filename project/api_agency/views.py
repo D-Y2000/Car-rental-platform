@@ -9,6 +9,9 @@ from api_agency.permissions import *
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
 from rest_framework import generics
 from rest_framework.authtoken.views import *
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
 # Create your views here.
 
 
@@ -199,19 +202,34 @@ def vehicles_models(request,pk):
 
 
 class ListVehicles(generics.ListCreateAPIView):
-    serializer_class=VehicleSerializer
+    # serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
     queryset=Vehicle.objects.all()
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter]
+    filterset_fields = ['owned_by','make','model','current_location','engine','transmission','type','price','options']
+    search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','price','options__name']
+
+    def get_serializer_class(self):
+        if self.request.method=='GET':
+            return VehicleDetailsSerializer
+        elif self.request.method=='POST':
+            return VehicleSerializer
+
+
 
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner,CanRudVehicles]
     queryset=Vehicle.objects.all()
+    def get_serializer_class(self):
+        if self.request.method=='GET':
+            return VehicleDetailsSerializer
+        elif self.request.method=='POST':
+            return VehicleSerializer
 
 
 
 class AgencyVehicles(generics.ListAPIView):
-    serializer_class=VehicleSerializer
+    serializer_class=VehicleDetailsSerializer
     permission_classes=[permissions.AllowAny]
     queryset=Vehicle.objects.all()
     def get_queryset(self):
