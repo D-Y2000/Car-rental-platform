@@ -138,10 +138,16 @@ Send **Post** request to:
 **required params**
     Token in request header
     
-### List and create vehicles
+### List and create vehicles +search and filter via url
 **api**
 
     [BASE_URL]/api_agency/vehicles/
+  filtering url
+  
+          [BASE_URL]/api_agency/vehicles/?owned_by=&make=14&model=&current_location=&engine=&transmission=&type=&price=
+  searching url 
+
+          [BASE_URL]/api_agency/vehicles/?search=
 **required params**
     Token required for creation
 
