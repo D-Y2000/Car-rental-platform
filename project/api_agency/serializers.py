@@ -113,6 +113,18 @@ class VehicleSerializer(serializers.ModelSerializer):
         vehicle.save()
         return vehicle
 
+class VehicleDetailsSerializer(serializers.ModelSerializer):
+    make=serializers.StringRelatedField()
+    model=serializers.StringRelatedField()
+    engine=serializers.StringRelatedField()
+    transmission=serializers.StringRelatedField()
+    type=serializers.StringRelatedField()
+    options=serializers.StringRelatedField(many=True)
+    owned_by=BranchSerializer(read_only=True)
+    class Meta:
+        model=Vehicle
+        fields="__all__"
+
 class MakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Make
