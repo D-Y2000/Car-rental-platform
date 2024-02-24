@@ -93,9 +93,20 @@ Send **Post** request to:
 **required params**
     
     {
-        "username":"adr@gmail.com",
+        "email":"adr@gmail.com",
         "password":"password"   
     }
+
+### refresh token 
+**api**
+
+    [BASE_URL]/api_agency/token/refresh/
+**required params**
+    
+    {
+        "refresh":"refreshToken"
+    }
+
 ### List and create branch for the agency
 **api**
     
