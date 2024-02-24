@@ -87,8 +87,7 @@ class BranchSerializer(serializers.ModelSerializer):
         fields="__all__"
 
     def create(self, validated_data):
-        token =  self.context['request'].auth
-        user=User.objects.get(auth_token=token)
+        user=self.context['request'].user
         agency=Agency.objects.get(user=user)
         validated_data['agency']=agency
         branch=Branch.objects.create(**validated_data)
@@ -104,8 +103,7 @@ class VehicleSerializer(serializers.ModelSerializer):
         fields="__all__"
 
     def create(self, validated_data):
-        token =  self.context['request'].auth
-        user = user=User.objects.get(auth_token=token)
+        user=self.context['request'].user
         agency=Agency.objects.get(user=user)
         branch=Branch.objects.filter(agency=agency)
         validated_data['owned_by']=branch.first()
