@@ -132,3 +132,18 @@ class ModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Model
         fields="__all__"
+
+
+from api_main.serializers import ProfileDetailsSerializer
+
+# Reservation serializer that allows the agencies to view thier reservations and can only accept or decline 
+
+class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
+    agency=AgencyDetailSerializer(read_only=True)
+    vehicle=VehicleDetailsSerializer(read_only=True)
+    client=ProfileDetailsSerializer(read_only=True)
+    start_date=serializers.DateField(read_only=True)
+    end_date=serializers.DateField(read_only=True)
+    class Meta:
+        model = Reservation
+        fields = "__all__"
