@@ -41,7 +41,7 @@ class MyReservations(generics.ListCreateAPIView):
         return reservations
     
 
-# view and edit (change date or vehicle or delete) a specific reservation for the logged in client if the reservation is postponed
+# Display and edit (change date or vehicle or delete) a specific reservation for the logged in client if the reservation is postponed
 class Myreservation(generics.RetrieveUpdateDestroyAPIView):
     serializer_class= ClientReservationDetailsSerializer
     queryset=Reservation.objects.all()

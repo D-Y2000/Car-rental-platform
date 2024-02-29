@@ -17,6 +17,8 @@ urlpatterns = [
     #Agency reservations
     path('agency/reservations/',ReservationList.as_view()),
     path('agency/reservations/<int:pk>/',ReservationDetails.as_view()),
+    path('agency/reservations/<int:pk>/accept/',AcceptReservation.as_view()),
+    path('agency/reservations/<int:pk>/refuse/',RefuseReservation.as_view()),
     #Branches
     path('branches/',Branches.as_view()),
     path('branches/<int:pk>/',BranchDetails.as_view()),
