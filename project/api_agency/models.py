@@ -1,3 +1,4 @@
+from typing import Iterable
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,PermissionsMixin
 
@@ -25,8 +26,10 @@ class UserManager(BaseUserManager):
         
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True')
-        
-        return self.create_user(email, password, **extra_fields)
+        super_user= self.create_user(email, password, **extra_fields)
+        super_user.role='admin'
+        super_user.save()
+        return super_user
 
 class User(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
@@ -166,7 +169,7 @@ class Vehicle(models.Model):
     doors = models.PositiveSmallIntegerField(null=True, blank=True)
     # Options
     options = models.ManyToManyField(Option, blank=True)
-
+    is_available=models.BooleanField(default=True)
 
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
@@ -213,4 +216,3 @@ class Reservation(models.Model):
     start_date=models.DateField()
     end_date=models.DateField()
     status=models.CharField(max_length=50, choices=STATUS_CHOICES, default='postponed')
-

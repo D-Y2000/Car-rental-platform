@@ -112,7 +112,6 @@ def vehicles_models(request,pk):
 class ListVehicles(generics.ListCreateAPIView):
     # serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
-    queryset=Vehicle.objects.all()
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['owned_by','make','model','current_location','engine','transmission','type','price','options']
     search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','price','options__name']
@@ -123,7 +122,9 @@ class ListVehicles(generics.ListCreateAPIView):
         elif self.request.method=='POST':
             return VehicleSerializer
 
-
+    def  get_queryset(self):
+        vehicles=Vehicle.objects.filter(is_available=True)
+        return vehicles
 
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner,CanRudVehicles]
@@ -156,8 +157,46 @@ class ReservationList(generics.ListAPIView):
         resrvations=Reservation.objects.filter(agency=agency)
         return resrvations
     
-# view and edit a specific reservation (accept or decline)
-class ReservationDetails(generics.RetrieveUpdateAPIView):
+# display and edit a specific reservation (accept or decline)
+class ReservationDetails(generics.RetrieveAPIView):
     serializer_class=AgencyReservationDetailsSerializer
     permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
     queryset=Reservation.objects.all()
+
+
+
+class AcceptReservation(generics.UpdateAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = AgencyReservationDetailsSerializer
+    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Mark the reservation as accepted
+        instance.status='accepted'
+
+        # Mark the related vehicle as unavailable
+        vehicle = instance.vehicle
+        vehicle.is_available = False
+        vehicle.save()
+
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RefuseReservation(generics.UpdateAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = AgencyReservationDetailsSerializer
+    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Mark the reservation as accepted
+        instance.status='refused'
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)

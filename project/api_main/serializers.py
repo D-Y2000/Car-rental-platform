@@ -43,10 +43,10 @@ class ReservationSerializer(serializers.ModelSerializer):
         resrvation.save()
         return resrvation
 
-#client reservation serializer to view or update the reservation
+#client reservation serializer to display or update the reservation
 class ClientReservationDetailsSerializer(serializers.ModelSerializer):
     agency=AgencyDetailSerializer(read_only=True)
-    vehicle=VehicleDetailsSerializer(read_only=True)
+    vehicle=VehicleDetailsSerializer()
     client=ProfileDetailsSerializer(read_only=True)
     status=serializers.CharField(read_only=True)
     class Meta:
