@@ -222,16 +222,23 @@ Token required for update,delete
 Token required 
 
 ### agency reservation details (display and update)
+
+#### accept reservation
 **api**
 
-    [BASE_URL]/api_agency/agency/reservations/<int:pk> (reservation Id)/ 
+    [BASE_URL]/api_agency/agency/reservations/<int:pk> (reservation Id)/accept/
 
 **required params**
 Token required 
 
-    {
-    "status":("accept or decline)
-    }
+#### refuse reservation
+**api**
+
+    [BASE_URL]/api_agency/agency/reservations/<int:pk> (reservation Id)/refuse/
+
+**required params**
+Token required 
+
 
 ## Client side
 
