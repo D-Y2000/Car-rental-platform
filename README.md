@@ -17,7 +17,7 @@ A Platform that allow individuals to rent cars from multiple agencies
     env\Script\activate
 
     # install requirements
-    pip install requirements.txt
+    pip install -r requirements.txt
 
     # setup db
     py manage.py makemirations
