@@ -14,10 +14,7 @@ class IsAgency(permissions.BasePermission):
 
 
 class IsAgencyOrReadOnly(permissions.BasePermission):    
-    def has_object_permission(self, request, view, obj):
-        
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
+    def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
         user=request.user
@@ -115,3 +112,9 @@ class CanRudVehicles(permissions.BasePermission):
         # only the user of the agency that owns this vehicle can edit or delete
         user=request.user
         return obj.owned_by.agency.user==user
+    
+
+class CanRudReservation(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user=request.user
+        return obj.agency.user == user

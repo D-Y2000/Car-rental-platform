@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,PermissionsMixin
 
+
 # Create your models here.
 
 
@@ -196,6 +197,20 @@ class Vehicle(models.Model):
 
 
 
+from api_main.models import Profile
+class Reservation(models.Model):
 
-
+    STATUS_CHOICES = (
+        ('accepted', 'Accepted'),
+        ('refused', 'Refused'),
+        ('postponed', 'Postponed'),
+        
+    )
+    
+    agency=models.ForeignKey(Agency,on_delete=models.CASCADE)
+    vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE)
+    client=models.ForeignKey(Profile,on_delete=models.CASCADE)
+    start_date=models.DateField()
+    end_date=models.DateField()
+    status=models.CharField(max_length=50, choices=STATUS_CHOICES, default='postponed')
 

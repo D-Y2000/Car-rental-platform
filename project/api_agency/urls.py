@@ -14,6 +14,9 @@ urlpatterns = [
     path('agencies/<int:pk>/branches/',AgencyBranches.as_view()),
     path('agency/branches/<int:pk>/',AgencyBranchesDetails.as_view()),
     path('agencies/<int:pk>/vehicles/',AgencyVehicles.as_view()),
+    #Agency reservations
+    path('agency/reservations/',ReservationList.as_view()),
+    path('agency/reservations/<int:pk>/',ReservationDetails.as_view()),
     #Branches
     path('branches/',Branches.as_view()),
     path('branches/<int:pk>/',BranchDetails.as_view()),

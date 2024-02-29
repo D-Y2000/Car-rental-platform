@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view,permission_classes
 from api_agency.serializers import *
-from api_agency.models import *
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -146,3 +145,19 @@ class AgencyVehicles(generics.ListAPIView):
         vehicles=Vehicle.objects.filter(owned_by__agency=pk)
         return vehicles
         
+#list the reservation of the logged  agency
+class ReservationList(generics.ListAPIView):
+    serializer_class=AgencyReservationDetailsSerializer
+    permission_classes=[permissions.IsAuthenticated,IsAgency]
+
+    def get_queryset(self):
+        user=self.request.user
+        agency=Agency.objects.get(user=user)
+        resrvations=Reservation.objects.filter(agency=agency)
+        return resrvations
+    
+# view and edit a specific reservation (accept or decline)
+class ReservationDetails(generics.RetrieveUpdateAPIView):
+    serializer_class=AgencyReservationDetailsSerializer
+    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    queryset=Reservation.objects.all()
