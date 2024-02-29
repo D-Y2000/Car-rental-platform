@@ -30,7 +30,7 @@ A Platform that allow individuals to rent cars from multiple agencies
     py manage.py runserver
 
 ## About API
-
+##Agency side
 ### GET all agencies
 
 Send **GET** request to:
@@ -212,3 +212,86 @@ Token required for update,delete
 **api**
 
     [BASE_URL]/api_agency/agencies/<int:pk>(agency_id)/vehicles/    
+
+### agency reservations (list)
+**api**
+
+    [BASE_URL]/api_agency/agency/reservations/
+
+**required params**
+Token required 
+
+### agency reservation details (display and update)
+**api**
+
+    [BASE_URL]/api_agency/agency/reservations/<int:pk> (reservation Id)/ 
+
+**required params**
+Token required 
+
+    {
+    "status":("accept or decline)
+    }
+
+## Client side
+
+### Profile (list and create)
+**api**
+    
+     [BASE_URL]/api/main/profiles/
+**required params**
+ 
+    {
+        "user": {
+            "email": "email@example.com"
+            "password": "........."
+            "password2": "........."
+        },
+        "first_name":"f_name",
+        "last_name":"l_name",
+        "date_of_birth":"YYYY-MM-DD"
+    }
+
+### Profile (display and edit )
+**api**
+    
+     [BASE_URL]/api/main/profiles/<int:pk> (profile id)/
+**required params**
+ Token required for edits 
+
+    {
+        "first_name":"f_name",
+        "last_name":"l_name",
+        "date_of_birth":"YYYY-MM-DD"
+    }
+
+
+
+### Profile (client) Reservations (create and list )
+**api**
+    
+     [BASE_URL]/api/main/profile/reservations/
+**required params**
+ Token required for edits 
+  
+    {
+        "vehicle":"vehcile_id",
+        "agency":"agency_id",
+        "start_date": "2024-03-03",
+        "end_date": "2024-03-29",
+    }
+
+
+### Profile (client) Reservation details (display,edit and delete )
+**api**
+    
+     [BASE_URL]/api/main/profile/reservations/<int:pk> (reservation id)/
+**required params**
+ Token required for edits 
+  
+    {
+        "start_date": "2024-03-03",
+        "end_date": "2024-03-29",
+    }
+
+ 
