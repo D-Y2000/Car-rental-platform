@@ -86,3 +86,129 @@ Send **Post** request to:
         "address": "Alger",
         "website": "www.company.com"
     }
+### Login user 
+**api**
+
+    [BASE_URL]/api_agency/login/
+**required params**
+    
+    {
+        "email":"adr@gmail.com",
+        "password":"password"   
+    }
+
+### refresh token 
+**api**
+
+    [BASE_URL]/api_agency/token/refresh/
+**required params**
+    
+    {
+        "refresh":"refreshToken"
+    }
+
+### List and create branch for the agency
+**api**
+    
+    [BASE_URL]/api_agency/branches/
+**required params**
+    Token in request header
+    
+    {
+        "name":"Branch name"
+    }
+### Edit agency Infos
+**api**
+
+    [BASE_URL]/api_agency/agencies/<int:pk>(agency_id)/
+**required params**
+    Token in request header
+    
+    {
+        "name": "Agency name",
+        "phone_number": "phone number"
+    }
+### Update branch
+**api**
+
+    [BASE_URL]/api_agency/branches/<int:pk>(branch_id)/
+
+**required params**
+    Token in request header
+    
+    {
+    "name":" Branch"
+}
+
+### logout user 
+**api**
+
+    [BASE_URL]/api_agency/logout/
+
+
+**required params**
+    Token in request header
+    
+### List and create vehicles +search and filter via url
+**api**
+
+    [BASE_URL]/api_agency/vehicles/
+  filtering url
+  
+          [BASE_URL]/api_agency/vehicles/?owned_by=&make=14&model=&current_location=&engine=&transmission=&type=&price=
+  searching url 
+
+          [BASE_URL]/api_agency/vehicles/?search=
+**required params**
+    Token required for creation
+
+    {
+        "make":"make",
+        "model":"model",
+        "year": "2015",
+        "mileage": null,
+        "current_location": null,
+        "color": null,
+        "seats": null,
+        "doors": null,
+        "description": null,
+        "price": "15000.00",
+        "created_at": "2024-02-21T15:02:05.436416Z",
+        "engine": null,
+        "transmission": null,
+        "type": null,
+        "options": []
+        }
+
+
+### Vehicle Details(retreive,update,delete)
+**api**
+
+     [BASE_URL]/api_agency/vehicles/<int:pk>(vehicle_id)/
+
+**required params**
+Token required for update,delete
+
+    {
+    "make":"make",
+    "model":"model",
+    "year": "2015",
+    "mileage": null,
+    "current_location": null,
+    "color": null,
+    "seats": null,
+    "doors": null,
+    "description": null,
+    "price": "15000.00",
+    "created_at": "2024-02-21T15:02:05.436416Z",
+    "engine": null,
+    "transmission": null,
+    "type": null,
+    "options": []
+    }
+
+
+### agency vehicles (list)
+**api**
+
+    [BASE_URL]/api_agency/agencies/<int:pk>(agency_id)/vehicles/    
