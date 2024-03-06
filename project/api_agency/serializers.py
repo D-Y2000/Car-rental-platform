@@ -148,3 +148,23 @@ class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
         fields = "__all__"
+
+#Agency over view (readOnly)
+
+class OverviewBranchSerializer(serializers.ModelSerializer):
+    my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
+    class Meta:
+        model=Branch
+        exclude = ['agency']
+
+
+
+class OverviewAgencySerializer(serializers.ModelSerializer):
+    user=UserSerializer(read_only=True)
+    my_branches=OverviewBranchSerializer(many=True,read_only=True)
+    my_reservations=AgencyReservationDetailsSerializer(many=True,read_only=True)
+
+
+    class Meta:
+        model=Agency
+        fields="__all__"

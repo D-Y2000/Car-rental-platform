@@ -11,6 +11,10 @@ urlpatterns = [
     path('agencies/',Agencies.as_view()),
     path('agencies/<int:pk>/',AgencyDetails.as_view()),
     path('agency/profile/',agencyProfile),
+    #agency overview(readonly)
+    path('agency/overview/',agencyOverview),
+
+    
     path('agencies/<int:pk>/branches/',AgencyBranches.as_view()),
     path('agency/branches/<int:pk>/',AgencyBranchesDetails.as_view()),
     path('agencies/<int:pk>/vehicles/',AgencyVehicles.as_view()),

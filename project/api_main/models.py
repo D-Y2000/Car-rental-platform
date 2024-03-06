@@ -1,5 +1,5 @@
 from django.db import models
-from api_agency.models import User
+from api_agency.models import User,Agency
 import datetime
 
 
