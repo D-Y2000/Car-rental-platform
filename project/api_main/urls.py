@@ -1,6 +1,7 @@
 from django.urls import path
 from api_main.views import *
 urlpatterns = [
+    path('user/me/',UserProfile),
     path('profiles/',ProfileList.as_view()),
     path('profiles/<int:pk>/',ProfileDetails.as_view()),
     #client reservations

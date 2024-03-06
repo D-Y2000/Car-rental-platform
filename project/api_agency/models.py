@@ -155,7 +155,7 @@ class Option(models.Model):
 
 
 class Vehicle(models.Model):
-    owned_by = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='my_cars')
+    owned_by = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='my_vehicles')
     make=models.ForeignKey(Make,on_delete=models.SET_NULL,null=True)
     model=models.ForeignKey(Model,on_delete=models.SET_NULL,null=True)
     year=models.CharField(max_length=4)
@@ -210,7 +210,7 @@ class Reservation(models.Model):
         
     )
     
-    agency=models.ForeignKey(Agency,on_delete=models.CASCADE)
+    agency=models.ForeignKey(Agency,on_delete=models.CASCADE,related_name="my_reservations")
     vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE)
     client=models.ForeignKey(Profile,on_delete=models.CASCADE)
     start_date=models.DateField()

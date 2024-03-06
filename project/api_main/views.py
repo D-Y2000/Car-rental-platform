@@ -4,6 +4,10 @@ from api_main.serializers import *
 from api_main.models import *
 from rest_framework import permissions
 from api_main.permissions import *
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.response import Response
+from api_agency.permissions import IsAgency
+from rest_framework import status
 
 
 # Create your views here.
@@ -47,3 +51,19 @@ class Myreservation(generics.RetrieveUpdateDestroyAPIView):
     queryset=Reservation.objects.all()
     permission_classes=[permissions.IsAuthenticated,IsDefault,CanEditResrvation,CandDeleteReservation]
     
+
+
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def UserProfile(request):
+    user=request.user
+    if user.role == 'agency_admin':
+        agency=Agency.objects.get(user=user)
+        serializer=AgencyDetailSerializer(agency)
+    elif user.role == 'default':
+        profile = Profile.objects.get(user=user)
+        serializer=ProfileDetailsSerializer(profile)
+        
+    return Response(serializer.data,status=status.HTTP_200_OK)

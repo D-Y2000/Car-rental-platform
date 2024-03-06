@@ -74,20 +74,6 @@ class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def logOut(request):
-    token = Token.objects.get(key=request.auth)
-    user=token.user
-    if user:
-        token.delete()
-        return Response({'info':'Succefully logged Out!'},status=status.HTTP_200_OK)
-    else:
-        return Response('Expired Token',status=status.HTTP_400_BAD_REQUEST)
-    
-
-
 #----------------------------VEHICLES-------------------#
 #LIST vehicles and models 
 @api_view(['GET'])
@@ -200,3 +186,30 @@ class RefuseReservation(generics.UpdateAPIView):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAgency])
+def agencyOverview(request):
+    user=request.user
+    agency=Agency.objects.get(user=user)
+    serializer=OverviewAgencySerializer(agency)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAgency])
+def UserProfile(request):
+    user=request.user
+    if user.role == 'agency_admin':
+        agency=Agency.objects.get(user=user)
+        serializer=AgencySerializer(agency)
+    elif user.role == 'default':
+        profile = Profile.objects.get(user=user)
+        serializer=ProfileDetailsSerializer(profile)
+        
+    return Response(serializer.data,status=status.HTTP_200_OK)
