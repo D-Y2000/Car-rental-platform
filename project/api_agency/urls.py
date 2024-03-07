@@ -18,6 +18,7 @@ urlpatterns = [
     path('agencies/<int:pk>/branches/',AgencyBranches.as_view()),
     path('agency/branches/<int:pk>/',AgencyBranchesDetails.as_view()),
     path('agencies/<int:pk>/vehicles/',AgencyVehicles.as_view()),
+    path('agencies/vehicle/images/<int:pk>/',VehicleImageDelete.as_view()),
     #Agency reservations
     path('agency/reservations/',ReservationList.as_view()),
     path('agency/reservations/<int:pk>/',ReservationDetails.as_view()),

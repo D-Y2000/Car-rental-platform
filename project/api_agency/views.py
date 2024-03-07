@@ -121,6 +121,11 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
         elif self.request.method=='PUT':
             return VehicleSerializer
 
+class VehicleImageDelete(generics.DestroyAPIView):
+    queryset=VehicleImage.objects.all()
+    serializer_class=VehicleImageSerializer
+    permission_classes=[IsAuthenticated,IsAgency,CanDestroyVehicleImage]
+    
 
 
 class AgencyVehicles(generics.ListAPIView):

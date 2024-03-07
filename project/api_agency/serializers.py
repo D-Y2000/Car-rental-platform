@@ -94,22 +94,37 @@ class BranchSerializer(serializers.ModelSerializer):
         branch.save()
         return branch
         
+class VehicleImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=VehicleImage
+        fields="__all__"
+    
 class VehicleSerializer(serializers.ModelSerializer):
     make=serializers.StringRelatedField
     model=serializers.StringRelatedField
     owned_by=BranchSerializer(read_only=True)
+    images = VehicleImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child = serializers.ImageField(max_length = 1000000, allow_empty_file = False, use_url = False),
+        write_only=True)
     class Meta:
         model=Vehicle
-        fields="__all__"
+        fields=["make","model","owned_by","year","price","images","uploaded_images"]
 
     def create(self, validated_data):
+        uploaded_images = validated_data.pop("uploaded_images")
         user=self.context['request'].user
         agency=Agency.objects.get(user=user)
         branch=Branch.objects.filter(agency=agency)
         validated_data['owned_by']=branch.first()
         vehicle=Vehicle.objects.create(**validated_data)
         vehicle.save()
+        for image in uploaded_images:
+            newvehicle_image = VehicleImage.objects.create(vehicle=vehicle, image=image)
+            newvehicle_image.save()
         return vehicle
+
+
 
 class VehicleDetailsSerializer(serializers.ModelSerializer):
     make=serializers.StringRelatedField()
@@ -119,9 +134,12 @@ class VehicleDetailsSerializer(serializers.ModelSerializer):
     type=serializers.StringRelatedField()
     options=serializers.StringRelatedField(many=True)
     owned_by=BranchSerializer(read_only=True)
+    images = VehicleImageSerializer(many=True, read_only=True)
     class Meta:
         model=Vehicle
         fields="__all__"
+
+
 
 class MakeSerializer(serializers.ModelSerializer):
     class Meta:
