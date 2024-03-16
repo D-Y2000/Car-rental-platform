@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from api_main.models import Profile
-from api_agency.serializers import UserSerializer,AgencyDetailSerializer,VehicleDetailsSerializer
+from api_agency.serializers import UserSerializer,AgencyDetailSerializer,VehicleDetailsSerializer,UserDetailsSerializer
 from api_agency.models import Reservation
 
 class ProfileSerializer(serializers.ModelSerializer):

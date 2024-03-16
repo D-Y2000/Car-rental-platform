@@ -32,6 +32,8 @@ class UserManager(BaseUserManager):
         return super_user
 
 class User(AbstractBaseUser,PermissionsMixin):
+    first_name = models.CharField(max_length=30,null=True,blank=True)
+    last_name = models.CharField(max_length=30,null=True,blank=True)
     email = models.EmailField(max_length=255, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -154,6 +156,7 @@ class Option(models.Model):
         ordering = ['name']
 
 
+
 class Vehicle(models.Model):
     owned_by = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='my_vehicles')
     make=models.ForeignKey(Make,on_delete=models.SET_NULL,null=True)
@@ -192,10 +195,20 @@ class Vehicle(models.Model):
     
     def __str__(self) -> str:
         return self.get_title()
-    
+
+def vehicle_image_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'images/vehicles/{0}/{1}/{2}'.format(instance.vehicle.owned_by.name,instance.vehicle.id,filename)
 
 
 
+class VehicleImage(models.Model):
+    vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE,related_name='images')
+    image=models.ImageField(upload_to=vehicle_image_path)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.vehicle} -- {self.created_at}"
 
 
 

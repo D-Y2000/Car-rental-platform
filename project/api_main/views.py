@@ -59,11 +59,8 @@ class Myreservation(generics.RetrieveUpdateDestroyAPIView):
 @permission_classes([permissions.IsAuthenticated])
 def UserProfile(request):
     user=request.user
-    if user.role == 'agency_admin':
-        agency=Agency.objects.get(user=user)
-        serializer=AgencyDetailSerializer(agency)
-    elif user.role == 'default':
-        profile = Profile.objects.get(user=user)
-        serializer=ProfileDetailsSerializer(profile)
-        
+    user=User.objects.get(email=user.email)
+    serializer=UserDetailsSerializer(user)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+

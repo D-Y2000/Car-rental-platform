@@ -121,6 +121,11 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
         elif self.request.method=='PUT':
             return VehicleSerializer
 
+class VehicleImageDelete(generics.DestroyAPIView):
+    queryset=VehicleImage.objects.all()
+    serializer_class=VehicleImageSerializer
+    permission_classes=[IsAuthenticated,IsAgency,CanDestroyVehicleImage]
+    
 
 
 class AgencyVehicles(generics.ListAPIView):
@@ -202,14 +207,9 @@ def agencyOverview(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated,IsAgency])
+@permission_classes([IsAuthenticated])
 def UserProfile(request):
     user=request.user
-    if user.role == 'agency_admin':
-        agency=Agency.objects.get(user=user)
-        serializer=AgencySerializer(agency)
-    elif user.role == 'default':
-        profile = Profile.objects.get(user=user)
-        serializer=ProfileDetailsSerializer(profile)
-        
+    user=User.objects.get(email=user.email)
+    serializer=UserDetailsSerializer(user)
     return Response(serializer.data,status=status.HTTP_200_OK)

@@ -118,3 +118,8 @@ class CanRudReservation(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user=request.user
         return obj.agency.user == user
+
+class CanDestroyVehicleImage(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user=request.user
+        return obj.vehicle.owned_by.agency.user==user
