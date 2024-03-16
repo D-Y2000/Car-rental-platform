@@ -23,7 +23,10 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields=["id","first_name","last_name","email","role"]
 
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
