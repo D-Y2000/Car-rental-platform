@@ -108,25 +108,41 @@ class VehicleSerializer(serializers.ModelSerializer):
     owned_by=BranchSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
-        child = serializers.ImageField(max_length = 1000000, allow_empty_file = False, use_url = False),
+        child = serializers.ImageField(max_length = 1000000, allow_empty_file=True, use_url = False),
+        allow_empty=True,
+        required=False,
         write_only=True)
     class Meta:
         model=Vehicle
         fields=["make","model","owned_by","year","price","images","uploaded_images"]
 
     def create(self, validated_data):
-        uploaded_images = validated_data.pop("uploaded_images")
+        uploaded_images = validated_data.get('uploaded_images', [])
+        #check if there are images uploaded if so remove them from the validated data to create vehicle
+        if uploaded_images:
+            validated_data.pop("uploaded_images")
         user=self.context['request'].user
         agency=Agency.objects.get(user=user)
         branch=Branch.objects.filter(agency=agency)
         validated_data['owned_by']=branch.first()
         vehicle=Vehicle.objects.create(**validated_data)
         vehicle.save()
-        for image in uploaded_images:
-            newvehicle_image = VehicleImage.objects.create(vehicle=vehicle, image=image)
-            newvehicle_image.save()
+        if uploaded_images:
+            for image in uploaded_images:
+                newvehicle_image = VehicleImage.objects.create(vehicle=vehicle, image=image)
+                newvehicle_image.save()
         return vehicle
 
+    def update(self, instance, validated_data):
+        uploaded_images = validated_data.get('uploaded_images', [])
+        #check if there are images uploaded if so remove them from the validated data to create vehicle
+        if uploaded_images:
+            validated_data.pop("uploaded_images")
+        if uploaded_images:
+            for image in uploaded_images:
+                newvehicle_image = VehicleImage.objects.create(vehicle=instance, image=image)
+                newvehicle_image.save()
+        return super().update(instance, validated_data)
 
 
 class VehicleDetailsSerializer(serializers.ModelSerializer):
