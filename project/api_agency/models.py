@@ -1,9 +1,5 @@
-from typing import Iterable
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,PermissionsMixin
-
-
-# Create your models here.
 
 
 class UserManager(BaseUserManager):
@@ -55,7 +51,6 @@ class User(AbstractBaseUser,PermissionsMixin):
     def __str__(self):
         return f'{self.email}'
 
-
 # the agency model just a profile of agency that can ber rolled by agency owner which is just a user with role agency_owner 
 # the agency need to be validate by the admin (Platform Owner) to be able to use the system
 class Agency(models.Model):
@@ -83,8 +78,6 @@ class Agency(models.Model):
     def __str__(self):
         return self.name
 
-
-
 # Note that Agency Class is just a profile of agency
 # an Agency can have many branches, each have a different location and different rate
 # after agency validation (Validate) a main branch gonna be created , related to this agency with same info
@@ -104,20 +97,14 @@ class Branch(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.agency.name}"
-    
 
-
-
-
-
-    
-
+# ====== VEHICLE MODEL OPTIONS ======
+# Make, Model, Type, Energy, Transmission, Options
 class Make(models.Model):
     name = models.CharField(max_length=100)
     def __str__(self) -> str:
         return self.name
 
-# ------------------ VehicleModel  -----------------
 class Model(models.Model):
     make_id = models.ForeignKey(Make, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, help_text='Model')
@@ -133,29 +120,22 @@ class Type(models.Model):
     def __str__(self) -> str:
         return self.name
     
-
-# ------------------ VehicleEngine ----------------------
 class Energy(models.Model):
     name = models.CharField(max_length=50, help_text="Engine name")
     def __str__(self) -> str:
         return self.name
 
-# ------------------ Transmission ----------------------
 class Transmission(models.Model):
     name = models.CharField(max_length=20, help_text="Transmission name")
     def __str__(self) -> str:
         return self.name
 
-# ------------------ Options ----------------------
-# (many to many relation with vehicle model)
 class Option(models.Model):
     name = models.CharField(max_length=100)
     def __str__(self) -> str:
         return self.name
     class Meta:
         ordering = ['name']
-
-
 
 class Vehicle(models.Model):
     owned_by = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='my_vehicles')
@@ -170,19 +150,17 @@ class Vehicle(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
     seats = models.PositiveSmallIntegerField(null=True, blank=True)
     doors = models.PositiveSmallIntegerField(null=True, blank=True)
-    # Options
     options = models.ManyToManyField(Option, blank=True)
     is_available=models.BooleanField(default=True)
 
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
-    
-    price = models.DecimalField(max_digits=8, decimal_places=2,)
+    # price per day
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
     # System -----------------------------------------
     created_at = models.DateTimeField(auto_now_add=True)
     
-
-
     # Ordering
     class Meta:
         ordering = ['-created_at']
@@ -190,6 +168,8 @@ class Vehicle(models.Model):
     # Methods
     def get_title(self):
         return f'{self.make} {self.model} {self.year}'
+    
+    # format price DZD
     def get_price(self):
         return f'{self.price} DZD'
     
@@ -200,8 +180,6 @@ def vehicle_image_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'images/vehicles/{0}/{1}/{2}'.format(instance.vehicle.owned_by.name,instance.vehicle.id,filename)
 
-
-
 class VehicleImage(models.Model):
     vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE,related_name='images')
     image=models.ImageField(upload_to=vehicle_image_path)
@@ -211,21 +189,35 @@ class VehicleImage(models.Model):
         return f"{self.vehicle} -- {self.created_at}"
 
 
+# Ahh hell no,
+# Why do I have to import Profile from api_main.models here not in the beginning
+# => due to a circular import
+# from api_main.models import Profile
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
-from api_main.models import Profile
+# Reservation model
+# connects agency, reserved vehicle, client
+# status: accepted, refused, postponed
+# Price: fixed [vehicle price per day * total_days(end_date - start_date)]
 class Reservation(models.Model):
-
     STATUS_CHOICES = (
         ('accepted', 'Accepted'),
         ('refused', 'Refused'),
         ('postponed', 'Postponed'),
-        
     )
     
-    agency=models.ForeignKey(Agency,on_delete=models.CASCADE,related_name="my_reservations")
-    vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE)
-    client=models.ForeignKey(Profile,on_delete=models.CASCADE)
-    start_date=models.DateField()
-    end_date=models.DateField()
-    status=models.CharField(max_length=50, choices=STATUS_CHOICES, default='postponed')
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations")
+    vehicle = models.ForeignKey(Vehicle, on_delete = models.CASCADE)
+    client = models.ForeignKey(User, on_delete = models.CASCADE)
+
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='postponed')
+    total_days = models.PositiveSmallIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=8, decimal_places=2,)
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
