@@ -46,8 +46,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'rest_framework_simplejwt',
-    'api_agency',
-    'api_main'
+    'api_agency.apps.ApiAgencyConfig',
+    'api_main.apps.ApiMainConfig',
+    'api_auth.apps.ApiAuthConfig',
 ]
 
 REST_FRAMEWORK = {
@@ -137,7 +138,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'api_agency.User'
+AUTH_USER_MODEL = 'api_auth.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

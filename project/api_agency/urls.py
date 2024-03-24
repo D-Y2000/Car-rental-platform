@@ -1,12 +1,7 @@
 from django.urls import path
 from api_agency.views import *
-from rest_framework.authtoken.views import *
-from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView,TokenVerifyView
+
 urlpatterns = [
-    #JWT VIEWS
-    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     #Agency
     path('agencies/',Agencies.as_view()),
     path('agencies/<int:pk>/',AgencyDetails.as_view()),

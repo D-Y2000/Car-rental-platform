@@ -1,32 +1,7 @@
 from rest_framework import serializers
 from api_agency.models import *
-from django.contrib.auth.password_validation import validate_password
+from api_auth.serializers import UserSerializer
 
-
-class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True,
-     required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True,required=True)
-    class Meta:
-        model=User
-        fields=["id","email","password","password2"]
-
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError(
-            {"password": "Password fields didn't match."})
-        return attrs
-    def create(self, validated_data):
-        validated_data.pop('password2')
-        user=User.objects.create(**validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-class UserDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields=["id","first_name","last_name","email","role"]
 
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
@@ -114,7 +89,8 @@ class VehicleSerializer(serializers.ModelSerializer):
         write_only=True)
     class Meta:
         model=Vehicle
-        fields=["make","model","owned_by","year","price","images","uploaded_images"]
+        fields="__all__"
+        extra_fields=["uploaded_images"]
 
     def create(self, validated_data):
         uploaded_images = validated_data.get('uploaded_images', [])
