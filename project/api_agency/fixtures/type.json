@@ -1,0 +1,13 @@
+[ 
+    {"model": "api_agency.type", "pk": 1, "fields": {"name": "Sedan"}},
+    {"model": "api_agency.type", "pk": 2, "fields": {"name": "Coupe"}},
+    {"model": "api_agency.type", "pk": 3, "fields": {"name": "Sport Car"}},
+    {"model": "api_agency.type", "pk": 4, "fields": {"name": "Hatchback"}},
+    {"model": "api_agency.type", "pk": 5, "fields": {"name": "SUV"}},
+    {"model": "api_agency.type", "pk": 6, "fields": {"name": "Minivan"}},
+    {"model": "api_agency.type", "pk": 7, "fields": {"name": "Pickup"}},
+    {"model": "api_agency.type", "pk": 8, "fields": {"name": "Van"}},
+    {"model": "api_agency.type", "pk": 9, "fields": {"name": "Motorcycles - Scooters"}},
+    {"model": "api_agency.type", "pk": 10, "fields": {"name": "Boat - Barques"}},
+    {"model": "api_agency.type", "pk": 11, "fields": {"name": "Other"}}
+]

@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+project/api_agency/migrations/0001_initial.py
+
+
+# Media files
+media/

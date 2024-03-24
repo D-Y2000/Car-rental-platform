@@ -1,0 +1,4 @@
+[ 
+    {"model": "api_agency.transmission", "pk": 1, "fields": {"name": "Automatic"}},
+    {"model": "api_agency.transmission", "pk": 2, "fields": {"name": "Manual"}}
+]
