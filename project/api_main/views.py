@@ -55,12 +55,5 @@ class Myreservation(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def UserProfile(request):
-    user=request.user
-    user=User.objects.get(email=user.email)
-    serializer=UserDetailsSerializer(user)
-    return Response(serializer.data,status=status.HTTP_200_OK)
 
 

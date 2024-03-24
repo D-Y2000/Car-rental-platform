@@ -1,9 +1,7 @@
-from django.shortcuts import render
 from rest_framework.decorators import api_view,permission_classes
 from api_agency.serializers import *
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from api_agency.permissions import *
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
 from rest_framework import generics
@@ -206,10 +204,3 @@ def agencyOverview(request):
 
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def UserProfile(request):
-    user=request.user
-    user=User.objects.get(email=user.email)
-    serializer=UserDetailsSerializer(user)
-    return Response(serializer.data,status=status.HTTP_200_OK)

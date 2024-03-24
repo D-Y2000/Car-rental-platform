@@ -18,7 +18,6 @@ class IsAgencyOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         user=request.user
-        print(user)
         return user.role =='agency_admin'
     
 
@@ -70,37 +69,6 @@ class IsBranchOwner(permissions.BasePermission):
             return True
         else:
             return False
-
-
-
-
-# class IsAgencyBranchOwnerOrReadOnly(permissions.BasePermission):
-
-#     def has_object_permission(self, request, view, obj):
-
-
-#         if request.method in permissions.SAFE_METHODS:
-#             return True
-        
-#         user=User.objects.get(auth_token=request.auth)
-
-
-#         return obj.agency.user == user
-    
-# class IsCarOwnerOrReadOnly(permissions.BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         if request.method in permissions.SAFE_METHODS:
-#             return True
-#         user=User.objects.get(auth_token=request.auth)
-#         return obj.owned_by.agency.user==user
-    
-
-# class IsAgencyBranchOwner(permissions.BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         user=User.objects.get(auth_token=request.auth)
-#         # print(obj.agency.user == user)
-#         return obj.agency.user == user
-    
 
 
 
