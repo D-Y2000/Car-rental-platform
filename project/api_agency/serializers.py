@@ -78,8 +78,6 @@ class VehicleImageSerializer(serializers.ModelSerializer):
         fields="__all__"
     
 class VehicleSerializer(serializers.ModelSerializer):
-    make=serializers.StringRelatedField
-    model=serializers.StringRelatedField
     owned_by=BranchSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
@@ -101,14 +99,21 @@ class VehicleSerializer(serializers.ModelSerializer):
         agency=Agency.objects.get(user=user)
         branch=Branch.objects.filter(agency=agency)
         validated_data['owned_by']=branch.first()
+        #check if there are options in the validated data 
+        options=validated_data.get('options', [])
+        if options:
+            #extract options from validated data
+            validated_data.pop('options')
         vehicle=Vehicle.objects.create(**validated_data)
+        #set the options manually because it is a many to many relation
+        vehicle.options.set(options)
         vehicle.save()
         if uploaded_images:
             for image in uploaded_images:
                 newvehicle_image = VehicleImage.objects.create(vehicle=vehicle, image=image)
                 newvehicle_image.save()
         return vehicle
-
+        
     def update(self, instance, validated_data):
         uploaded_images = validated_data.get('uploaded_images', [])
         #check if there are images uploaded if so remove them from the validated data to create vehicle
@@ -118,6 +123,15 @@ class VehicleSerializer(serializers.ModelSerializer):
             for image in uploaded_images:
                 newvehicle_image = VehicleImage.objects.create(vehicle=instance, image=image)
                 newvehicle_image.save()
+
+        #check if there are options in the validated data 
+        options=validated_data.get('options', [])
+        if options:
+            #extract options from validated data
+            validated_data.pop('options')
+            instance.options.set(options)
+        instance.save()
+
         return super().update(instance, validated_data)
 
 

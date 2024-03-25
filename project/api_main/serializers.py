@@ -40,9 +40,12 @@ class ReservationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         profile=Profile.objects.get(user=self.context['request'].user)
         validated_data['client']=profile
-        resrvation=Reservation.objects.create(**validated_data)
-        resrvation.save()
-        return resrvation
+        reservation=Reservation.objects.create(**validated_data)
+        reservation.total_days = (reservation.end_date - reservation.start_date).days
+        # print((reservation.end_date-reservation.start_date).days * reservation.vehicle.price)
+        reservation.total_price = reservation.total_days * reservation.vehicle.price
+        reservation.save()
+        return reservation
 
 #client reservation serializer to display or update the reservation
 class ClientReservationDetailsSerializer(serializers.ModelSerializer):
