@@ -42,7 +42,6 @@ class ReservationSerializer(serializers.ModelSerializer):
         validated_data['client']=profile
         reservation=Reservation.objects.create(**validated_data)
         reservation.total_days = (reservation.end_date - reservation.start_date).days
-        # print((reservation.end_date-reservation.start_date).days * reservation.vehicle.price)
         reservation.total_price = reservation.total_days * reservation.vehicle.price
         reservation.save()
         return reservation
