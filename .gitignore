@@ -132,3 +132,7 @@ project/api_agency/migrations/0001_initial.py
 
 # Media files
 media/
+
+
+# Static files
+static/
