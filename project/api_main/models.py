@@ -6,9 +6,13 @@ User = get_user_model()
 
 class Profile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    date_of_birth = models.DateField()
+
+    first_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30, blank=True, null=True)
+
+    # format date to dd-mm-yy 
+    date_of_birth = models.DateField(null=True, blank=True)
+    
     profile_image = models.ImageField(null=True,blank=True)
 
     def get_age(self):
