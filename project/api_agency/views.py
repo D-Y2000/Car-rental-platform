@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.decorators import api_view,permission_classes
 from api_agency.serializers import *
 from rest_framework.response import Response
@@ -203,4 +204,13 @@ def agencyOverview(request):
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def get_details(request):
+    data={
+    'types':TypeSerializer(Type.objects.all(),many=True).data,
+    'energies':EnergySerializer(Energy.objects.all(),many=True).data,
+    'transmissions':TransmissionSerializer(Transmission.objects.all(),many=True).data,
+    'options':OptionSerializer(Option.objects.all(),many=True).data
+    }
 
+    return Response(data=data,status=status.HTTP_200_OK)
