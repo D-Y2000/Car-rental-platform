@@ -246,7 +246,11 @@ Token required
 
 **required params**
 Token required 
-     
+
+ ### Get vehicles details (energies,types,options,transmissions...)
+**api**
+    
+     [BASE_URL]/api/agency/details/
 
 ## Client side
 
