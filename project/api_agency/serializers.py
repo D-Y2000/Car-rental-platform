@@ -161,6 +161,29 @@ class ModelSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 
+class TypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Type
+        fields=['id','name']
+
+class OptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields=['id','name']
+
+class EnergySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Energy
+        fields=['id','name']
+
+class TransmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transmission
+        fields=['id','name']
+
+
+
+
 from api_main.serializers import ProfileDetailsSerializer
 
 # Reservation serializer that allows the agencies to display thier reservations and can only accept or decline 
