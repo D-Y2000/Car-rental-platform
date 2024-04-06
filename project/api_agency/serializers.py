@@ -135,19 +135,6 @@ class VehicleSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class VehicleDetailsSerializer(serializers.ModelSerializer):
-    make=serializers.StringRelatedField()
-    model=serializers.StringRelatedField()
-    engine=serializers.StringRelatedField()
-    transmission=serializers.StringRelatedField()
-    type=serializers.StringRelatedField()
-    options=serializers.StringRelatedField(many=True)
-    owned_by=BranchSerializer(read_only=True)
-    images = VehicleImageSerializer(many=True, read_only=True)
-    class Meta:
-        model=Vehicle
-        fields="__all__"
-
 
 
 class MakeSerializer(serializers.ModelSerializer):
@@ -180,6 +167,21 @@ class TransmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transmission
         fields=['id','name']
+
+
+
+class VehicleDetailsSerializer(serializers.ModelSerializer):
+    make=MakeSerializer()
+    model=ModelSerializer()
+    engine=EnergySerializer
+    transmission=TransmissionSerializer()
+    type=TypeSerializer()
+    options=TypeSerializer(many=True)
+    owned_by=BranchSerializer(read_only=True)
+    images = VehicleImageSerializer(many=True, read_only=True)
+    class Meta:
+        model=Vehicle
+        fields="__all__"
 
 
 
