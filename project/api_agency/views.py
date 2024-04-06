@@ -112,12 +112,17 @@ class ListVehicles(generics.ListCreateAPIView):
         return vehicles
 
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner,CanRudVehicles]
-    queryset=Vehicle.objects.all()
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+        IsAgencyOrReadOnly,
+        IsBranchOwner,
+        CanRudVehicles
+    ]
+    queryset = Vehicle.objects.all()
     def get_serializer_class(self):
         if self.request.method=='GET':
             return VehicleDetailsSerializer
-        elif self.request.method=='PUT':
+        elif self.request.method in ['PUT', 'PATCH']:
             return VehicleSerializer
 
 class VehicleImageDelete(generics.DestroyAPIView):
