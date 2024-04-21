@@ -57,20 +57,45 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "created_at",
                 ]
 
+class LocationSerializer(serializers.Serializer):
+    lat = serializers.DecimalField(max_digits=50, decimal_places=30)
+    lng = serializers.DecimalField(max_digits=50, decimal_places=30)
 
 class BranchSerializer(serializers.ModelSerializer):
     agency=AgencySerializer(read_only=True)
+    location = LocationSerializer(write_only=True)
     class Meta:
         model=Branch
         fields="__all__"
+        
 
     def create(self, validated_data):
-        user=self.context['request'].user
-        agency=Agency.objects.get(user=user)
-        validated_data['agency']=agency
-        branch=Branch.objects.create(**validated_data)
+        user = self.context['request'].user
+        agency = Agency.objects.get(user=user)
+        validated_data['agency'] = agency
+
+        branch = Branch.objects.create(**validated_data)
+        
+        # *** Add location ***
+        # Set location manually
+        # Note that location in frontend like this => {...prevdata, location:{lat: 36.8065, lng: 10.1815}}
+        # location_data = validated_data.pop('location', {})
+        # branch.latitude = location_data.get('lat', None)
+        # branch.longitude = location_data.get('lng', None)
+
         branch.save()
         return branch
+    
+    def update(self, instance, validated_data):
+        print("** UPDATE ** VALIDATED DATA:", validated_data)
+        # *** Update location ***
+        location_data = validated_data.pop('location', {})
+        instance.latitude = location_data.get('lat', instance.latitude)
+        instance.longitude = location_data.get('lng', instance.longitude)
+
+        instance.save()
+        return super().update(instance, validated_data)
+    
         
 class VehicleImageSerializer(serializers.ModelSerializer):
     class Meta:
