@@ -36,11 +36,15 @@ class Branch(models.Model):
     agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name='my_branches')
     
     name = models.CharField(max_length=150)
-    location = models.CharField(max_length=30, blank=True)
 
     email = models.EmailField(blank=True, null=True)
     phone_number = models.CharField(max_length=14, blank=True)
-
+    
+    # *** location ***
+    # for now let's just make it very simple long, lat and address
+    latitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
