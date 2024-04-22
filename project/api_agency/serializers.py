@@ -63,7 +63,6 @@ class LocationSerializer(serializers.Serializer):
 
 class BranchSerializer(serializers.ModelSerializer):
     agency=AgencySerializer(read_only=True)
-    location = LocationSerializer(write_only=True)
     class Meta:
         model=Branch
         fields="__all__"
