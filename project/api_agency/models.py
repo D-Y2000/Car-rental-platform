@@ -1,6 +1,9 @@
 from django.db import models
 from api_main.models import Profile
 from api_auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+
 # the agency model just a profile of agency that can ber rolled by agency owner which is just a user with role agency_owner 
 # the agency need to be validate by the admin (Platform Owner) to be able to use the system
 class Agency(models.Model):
@@ -106,27 +109,52 @@ class Vehicle(models.Model):
     doors = models.PositiveSmallIntegerField(null=True, blank=True)
     options = models.ManyToManyField(Option, blank=True)
     is_available=models.BooleanField(default=True)
-
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
-    # price per day
+    # *** Price/Day ***
+
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
-    # System -----------------------------------------
-    created_at = models.DateTimeField(auto_now_add=True)
+    # *** rental conditions ***
+    min_rental_days = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+        help_text='Minimum number of rental days'
+    )
+    max_rental_days = models.PositiveSmallIntegerField(
+        default=30,
+        validators=[MinValueValidator(1), MaxValueValidator(365)],
+        help_text='Maximum number of rental days'
+    )
+    min_rental_age = models.PositiveSmallIntegerField(
+        default=25,
+        validators=[MinValueValidator(18)],
+        help_text='Minimum age required to rent the vehicle'
+    )
+    is_fuel_full = models.BooleanField(
+        default=False,
+        help_text='Fuel status of the vehicle (True if full, False if not full)'
+    )
+    is_mileage_unlimited = models.BooleanField(
+        default=False,
+        help_text='Mileage status of the vehicle (True if unlimited, False if limited)'
+    )
+    is_with_driver = models.BooleanField(
+        default=False,
+        help_text='Indicates whether the vehicle is rented with a driver'
+    )
     
-    # Ordering
+    # ----- System ------
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # *** Ordering ***
     class Meta:
         ordering = ['-created_at']
 
-    # Methods
+    # *** Methods ***
     def get_title(self):
         return f'{self.make} {self.model} {self.year}'
-    
-    # format price DZD
-    def get_price(self):
-        return f'{self.price} DZD'
-    
     def __str__(self) -> str:
         return self.get_title()
 
