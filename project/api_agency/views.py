@@ -46,16 +46,22 @@ class Branches(generics.ListCreateAPIView):
     serializer_class=BranchSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly]
 
+    def get_serializer_class(self):
+
+        if self.request.method == 'GET':
+            return BranchDetailsSerializer
+        elif self.request.method == 'POST':
+            return BranchSerializer
 
 
 class BranchDetails(generics.RetrieveAPIView):
     queryset=Branch.objects.all()
-    serializer_class=BranchSerializer
+    serializer_class=BranchDetailsSerializer
     permission_classes=[permissions.AllowAny]
 
 
 class AgencyBranches(generics.ListAPIView):
-    serializer_class=BranchSerializer
+    serializer_class=BranchDetailsSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,CanCreateBranches]
 
     def get_queryset(self):
@@ -68,6 +74,13 @@ class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
     serializer_class=BranchSerializer
     permission_classes=[IsAuthenticated,IsAgency,CanRudBranches]
     queryset=Branch.objects.all()
+    
+    def get_serializer_class(self):
+
+        if self.request.method == 'GET':
+            return BranchDetailsSerializer
+        else:
+            return BranchSerializer
 
 
 
@@ -98,7 +111,7 @@ class ListVehicles(generics.ListCreateAPIView):
     # serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
-    filterset_fields = ['owned_by','make','model','current_location','engine','transmission','type','price','options']
+    filterset_fields = ['owned_by__wilaya','engine','transmission','type','price','options']
     search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','price','options__name']
 
     def get_serializer_class(self):

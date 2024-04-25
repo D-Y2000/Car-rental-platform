@@ -31,6 +31,21 @@ class Agency(models.Model):
     def __str__(self):
         return self.name
 
+class Wilaya(models.Model):
+    code = models.IntegerField(blank=True)
+    name = models.CharField(max_length=200, blank=True)
+    ar_name = models.CharField(max_length=200, blank=True)
+    longitude = models.CharField(max_length=50, null=True, blank=True)
+    latitude = models.CharField(max_length=50, null=True, blank=True)
+    class Meta:
+        ordering=['name']
+    
+    def __str__(self) -> str:
+        return self.name
+
+
+
+
 # Note that Agency Class is just a profile of agency
 # an Agency can have many branches, each have a different location and different rate
 # after agency validation (Validate) a main branch gonna be created , related to this agency with same info
@@ -48,6 +63,7 @@ class Branch(models.Model):
     latitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
     longitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
     address = models.CharField(max_length=255, blank=True)
+    wilaya = models.ForeignKey(Wilaya,on_delete = models.CASCADE,null=True,blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
