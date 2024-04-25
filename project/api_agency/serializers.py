@@ -61,6 +61,13 @@ class LocationSerializer(serializers.Serializer):
     lat = serializers.DecimalField(max_digits=50, decimal_places=30)
     lng = serializers.DecimalField(max_digits=50, decimal_places=30)
 
+
+
+class WilayaSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Wilaya
+        fields="__all__"
+
 class BranchSerializer(serializers.ModelSerializer):
     agency=AgencySerializer(read_only=True)
     location = LocationSerializer(write_only=True,required=False)
@@ -97,13 +104,19 @@ class BranchSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
     
         
+class BranchDetailsSerializer(serializers.ModelSerializer):
+    agency=AgencySerializer(read_only=True)
+    wilaya = WilayaSerializer()
+    class Meta:
+        model=Branch
+        fields="__all__"
 class VehicleImageSerializer(serializers.ModelSerializer):
     class Meta:
         model=VehicleImage
         fields="__all__"
     
 class VehicleSerializer(serializers.ModelSerializer):
-    owned_by=BranchSerializer(read_only=True)
+    owned_by=BranchDetailsSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child = serializers.ImageField(max_length = 1000000, allow_empty_file=True, use_url = False),
@@ -202,7 +215,7 @@ class VehicleDetailsSerializer(serializers.ModelSerializer):
     transmission=TransmissionSerializer()
     type=TypeSerializer()
     options=TypeSerializer(many=True)
-    owned_by=BranchSerializer(read_only=True)
+    owned_by=BranchDetailsSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     class Meta:
         model=Vehicle
