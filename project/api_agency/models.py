@@ -125,6 +125,7 @@ class Vehicle(models.Model):
     doors = models.PositiveSmallIntegerField(null=True, blank=True)
     options = models.ManyToManyField(Option, blank=True)
     is_available=models.BooleanField(default=True)
+    is_deleted=models.BooleanField(default=False)
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
     # *** Price/Day ***
