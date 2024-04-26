@@ -121,7 +121,7 @@ class ListVehicles(generics.ListCreateAPIView):
             return VehicleSerializer
 
     def  get_queryset(self):
-        vehicles=Vehicle.objects.filter(is_available=True)
+        vehicles=Vehicle.objects.filter(is_available=True,is_deleted=False)
         return vehicles
 
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
@@ -135,8 +135,17 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method=='GET':
             return VehicleDetailsSerializer
-        elif self.request.method in ['PUT', 'PATCH']:
+        else:
             return VehicleSerializer
+
+    def delete(self, request, *args, **kwargs):
+        instance=self.get_object()
+        instance.is_deleted=True
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
 
 class VehicleImageDelete(generics.DestroyAPIView):
     queryset=VehicleImage.objects.all()
@@ -151,7 +160,7 @@ class AgencyVehicles(generics.ListAPIView):
     queryset=Vehicle.objects.all()
     def get_queryset(self):
         pk= self.kwargs['pk']
-        vehicles=Vehicle.objects.filter(owned_by__agency=pk)
+        vehicles=Vehicle.objects.filter(owned_by__agency=pk,is_deleted=False)
         return vehicles
         
 #list the reservation of the logged  agency
