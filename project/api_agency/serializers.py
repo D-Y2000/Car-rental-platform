@@ -1,7 +1,8 @@
+from rest_framework.response import Response
 from rest_framework import serializers
 from api_agency.models import *
 from api_auth.serializers import UserSerializer
-
+from rest_framework import status
 
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
@@ -116,7 +117,6 @@ class VehicleImageSerializer(serializers.ModelSerializer):
         fields="__all__"
     
 class VehicleSerializer(serializers.ModelSerializer):
-    owned_by=BranchDetailsSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child = serializers.ImageField(max_length = 1000000, allow_empty_file=True, use_url = False),
@@ -133,10 +133,6 @@ class VehicleSerializer(serializers.ModelSerializer):
         #check if there are images uploaded if so remove them from the validated data to create vehicle
         if uploaded_images:
             validated_data.pop("uploaded_images")
-        user=self.context['request'].user
-        agency=Agency.objects.get(user=user)
-        branch=Branch.objects.filter(agency=agency)
-        validated_data['owned_by']=branch.first()
         #check if there are options in the validated data 
         options=validated_data.get('options', [])
         if options:
