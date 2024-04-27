@@ -71,7 +71,6 @@ class AgencyBranches(generics.ListAPIView):
     
 
 class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class=BranchSerializer
     permission_classes=[IsAuthenticated,IsAgency,CanRudBranches]
     queryset=Branch.objects.all()
     
@@ -241,3 +240,10 @@ def get_details(request):
     }
 
     return Response(data=data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_wilayas(request):
+    wilayas=Wilaya.objects.all()
+    serializer=WilayaSerializer(wilayas,many=True)
+    return Response(data=serializer.data,status=status.HTTP_200_OK)
