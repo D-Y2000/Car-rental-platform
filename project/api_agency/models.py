@@ -38,7 +38,7 @@ class Wilaya(models.Model):
     longitude = models.CharField(max_length=50, null=True, blank=True)
     latitude = models.CharField(max_length=50, null=True, blank=True)
     class Meta:
-        ordering=['name']
+        ordering=['code']
     
     def __str__(self) -> str:
         return self.name
