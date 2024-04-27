@@ -26,6 +26,7 @@ urlpatterns = [
     path('makes/',vehicles_makes),
     path('makes/<int:pk>/models/',vehicles_models),
     path('details/',get_details),
+    path('wilayas/',get_wilayas),
     
     path('vehicles/',ListVehicles.as_view()),
     path('vehicles/<int:pk>/',VehicleDetails.as_view()),
