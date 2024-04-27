@@ -153,6 +153,23 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
         else:
             return VehicleSerializer
 
+
+    def update(self, request, *args, **kwargs):
+        agency=Agency.objects.get(user=request.user)
+        branches=Branch.objects.filter(agency=agency)
+        branch_pk=request.data.get('owned_by')
+    
+        try :
+            branch=Branch.objects.get(pk=branch_pk)
+            print(f'branch: {branch}')
+            if branch in branches:
+                return super().update(request, *args, **kwargs)
+            else:
+                return Response("you can't perform this action",status=status.HTTP_400_BAD_REQUEST)    
+        except Branch.DoesNotExist:
+            return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
+
+        
     def delete(self, request, *args, **kwargs):
         instance=self.get_object()
         instance.is_deleted=True
