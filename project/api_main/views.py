@@ -51,9 +51,3 @@ class Myreservation(generics.RetrieveUpdateDestroyAPIView):
     queryset=Reservation.objects.all()
     permission_classes=[permissions.IsAuthenticated,IsDefault,CanEditResrvation,CandDeleteReservation]
     
-
-
-
-
-
-

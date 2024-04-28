@@ -9,6 +9,8 @@ from rest_framework import generics
 from rest_framework.authtoken.views import *
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from api_main.permissions import IsDefault
+from django.http import Http404
 
 # Create your views here.
 
@@ -128,11 +130,11 @@ class ListVehicles(generics.ListCreateAPIView):
         agency=Agency.objects.get(user=request.user)
         branches=Branch.objects.filter(agency=agency)
         branch_pk=request.data.get('owned_by')
-    
+        # search if the given branch is actually linked to the conneted agency
         try :
             branch=Branch.objects.get(pk=branch_pk)
-            print(f'branch: {branch}')
             if branch in branches:
+                # if True permission granted to create vehicle and assign it to the branch
                 return super().create(request, *args, **kwargs) 
             else:
                 return Response("you can't perfor this action",status=status.HTTP_400_BAD_REQUEST)    
@@ -251,6 +253,43 @@ class RefuseReservation(generics.UpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
+# Agency Rate
+
+class RateAgency(generics.CreateAPIView):
+    serializer_class = RateSerializer
+    queryset = Rate.objects.all()
+    permission_classes= [permissions.IsAuthenticated,IsDefault,]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        agency_pk=kwargs.get('pk')
+        # print(f'kwargs :{kwargs}')
+        # print(f'self :{self}')
+        # print(f'args :{args}')
+        # print(f'request :{request.POST}')
+        try :
+            agency=Agency.objects.get(pk=agency_pk)
+            kwargs['agency']=agency_pk
+            kwargs['user']=user
+            return super().create(request, *args, **kwargs) 
+        except Agency.DoesNotExist:
+            return Response("Agency doesn't exist",status=status.HTTP_404_NOT_FOUND)
+        # print(agency)
+        
+        # print(kwargs)
+        
+
+
+class AgencyRatings(generics.ListAPIView):
+    serializer_class = RateDetailsSerializer
+
+    def get_queryset(self):
+        try :
+            agency=Agency.objects.get(pk=self.kwargs["pk"])
+            ratings=Rate.objects.filter(agency=agency)
+            return ratings
+        except Agency.DoesNotExist:
+            raise Http404("Agency doesn't exist")
 
 
 

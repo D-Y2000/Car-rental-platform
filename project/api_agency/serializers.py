@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import serializers
 from api_agency.models import *
@@ -57,6 +58,27 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "is_validated",
                 "created_at",
                 ]
+        
+
+class RateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rate
+        fields = ["rate"]
+
+
+
+        
+    
+class RateDetailsSerializer(serializers.ModelSerializer):
+    # agency = AgencyDetailSerializer(many=False,read_only=True,)
+    agency= serializers.SlugRelatedField(slug_field='name',read_only=True)
+    user = UserSerializer(many=False,read_only=True)
+
+    class Meta:
+        model = Rate
+        fields = "__all__"
+
+
 
 class LocationSerializer(serializers.Serializer):
     lat = serializers.DecimalField(max_digits=50, decimal_places=30)
