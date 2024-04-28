@@ -20,6 +20,7 @@ class Agency(models.Model):
     website = models.URLField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     address = models.CharField(max_length=255, blank=True)
+    rate  = models.FloatField(default=0,)
 
 
     license_doc = models.ImageField(null=True,blank=True)
@@ -30,6 +31,12 @@ class Agency(models.Model):
 
     def __str__(self):
         return self.name
+
+class Rate(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name="my_ratings")
+    rate  = models.FloatField(default=0.0)
+
 
 class Wilaya(models.Model):
     code = models.IntegerField(blank=True)

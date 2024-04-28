@@ -4,7 +4,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
 
-
 class IsAgency(permissions.BasePermission):
     def has_permission(self, request, view):
         user=request.user

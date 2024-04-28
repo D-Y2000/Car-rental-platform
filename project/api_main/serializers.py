@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from api_main.models import Profile
-from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer
+from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer,RateSerializer
 from api_auth.serializers import UserSerializer,UserDetailsSerializer
-from api_agency.models import Reservation
+from api_agency.models import Reservation,Rate
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     user=UserSerializer()
