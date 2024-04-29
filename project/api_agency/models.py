@@ -135,9 +135,13 @@ class Vehicle(models.Model):
     is_deleted=models.BooleanField(default=False)
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
-    # *** Price/Day ***
-
+    # *** Pricing ***
+    # Price can be diffirent per time
+    # Price per day, Price per week, Price per month
+    # => Default Price is per day
     price = models.DecimalField(max_digits=8, decimal_places=2)
+    price_per_week = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    price_per_month = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
     # *** rental conditions ***
     min_rental_days = models.PositiveSmallIntegerField(
