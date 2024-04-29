@@ -62,6 +62,14 @@ class BranchDetails(generics.RetrieveAPIView):
     permission_classes=[permissions.AllowAny]
 
 
+class BranchVehicles(generics.ListAPIView):
+    serializer_class=VehicleDetailsSerializer
+    permission_classes=[permissions.AllowAny]
+    def get_queryset(self):
+        pk= self.kwargs['pk']
+        vehicles=Vehicle.objects.filter(owned_by=pk,is_deleted=False)
+        return vehicles
+
 class AgencyBranches(generics.ListAPIView):
     serializer_class=BranchDetailsSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,CanCreateBranches]
