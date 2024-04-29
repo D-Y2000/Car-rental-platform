@@ -260,38 +260,18 @@ class RateAgency(generics.CreateAPIView):
     queryset = Rate.objects.all()
     permission_classes= [permissions.IsAuthenticated,IsDefault,]
 
-    def create(self, request, *args, **kwargs):
-        user = request.user
-        agency_pk=kwargs.get('pk')
-        # print(f'kwargs :{kwargs}')
-        # print(f'self :{self}')
-        # print(f'args :{args}')
-        # print(f'request :{request.POST}')
-        try :
-            agency=Agency.objects.get(pk=agency_pk)
-            kwargs['agency']=agency_pk
-            kwargs['user']=user
-            return super().create(request, *args, **kwargs) 
-        except Agency.DoesNotExist:
-            return Response("Agency doesn't exist",status=status.HTTP_404_NOT_FOUND)
-        # print(agency)
-        
-        # print(kwargs)
-        
-
 
 class AgencyRatings(generics.ListAPIView):
     serializer_class = RateDetailsSerializer
 
     def get_queryset(self):
         try :
-            agency=Agency.objects.get(pk=self.kwargs["pk"])
+            agency_pk=self.kwargs["pk"]
+            agency=Agency.objects.get(pk=agency_pk)
             ratings=Rate.objects.filter(agency=agency)
             return ratings
         except Agency.DoesNotExist:
-            raise Http404("Agency doesn't exist")
-
-
+            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,IsAgency])
