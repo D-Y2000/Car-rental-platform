@@ -1,4 +1,5 @@
-from django.http import JsonResponse
+from django.forms import ValidationError
+from django.http import Http404, HttpResponse, JsonResponse
 from rest_framework.response import Response
 from rest_framework import serializers
 from api_agency.models import *
@@ -65,8 +66,22 @@ class RateSerializer(serializers.ModelSerializer):
         model = Rate
         fields = ["rate"]
 
+    def create(self, validated_data):
+        user =self.context['request'].user
+        agency_pk = self.context['view'].kwargs.get('pk')
+        try:
+            agency=Agency.objects.get(pk=agency_pk)
+            validated_data['user']=user
+            validated_data['agency']=agency
+            print(validated_data)
+            print(agency_pk)
+            return super().create(validated_data)
+        except Agency.DoesNotExist:
+            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+        
 
 
+        
         
     
 class RateDetailsSerializer(serializers.ModelSerializer):
