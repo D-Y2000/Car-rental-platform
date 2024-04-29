@@ -35,7 +35,7 @@ class Agency(models.Model):
 class Rate(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
     agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name="my_ratings")
-    rate  = models.FloatField(default=0.0)
+    rate  = models.FloatField(validators=[MinValueValidator(1.0),MaxValueValidator(5.0)],default=1.0)
 
 
 class Wilaya(models.Model):
