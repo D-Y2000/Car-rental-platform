@@ -3,7 +3,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from rest_framework.response import Response
 from rest_framework import serializers
 from api_agency.models import *
-from api_auth.serializers import UserSerializer
+from api_auth.serializers import UserSerializer,UserDetailsSerializer
 from rest_framework import status
 
 class AgencySerializer(serializers.ModelSerializer):
@@ -36,7 +36,7 @@ class AgencySerializer(serializers.ModelSerializer):
         agency=Agency.objects.create(**validated_data)
         agency.save()
         #create a branch for the agency
-        branch=Branch.objects.create(agency=agency,name=f'{agency.name} branch')
+        branch=Branch.objects.create(agency=agency,user=agency.user,name=f'{agency.name} branch')
         branch.save()
 
         return agency
@@ -69,8 +69,13 @@ class RateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user =self.context['request'].user
         agency_pk = self.context['view'].kwargs.get('pk')
+        
         try:
             agency=Agency.objects.get(pk=agency_pk)
+            #check if the user rated this agency previously. to ensure that he gets to rate it just one time.
+            rates=Rate.objects.filter(agency=agency_pk,user=user)
+            if rates:
+                raise ValidationError("Rating already exists")
             validated_data['user']=user
             validated_data['agency']=agency
             print(validated_data)
@@ -107,7 +112,8 @@ class WilayaSerializer(serializers.ModelSerializer):
         fields="__all__"
 
 class BranchSerializer(serializers.ModelSerializer):
-    agency=AgencySerializer(read_only=True)
+    agency=AgencyDetailSerializer(read_only=True)
+    user = UserSerializer()
     location = LocationSerializer(write_only=True,required=False)
     class Meta:
         model=Branch
@@ -117,9 +123,10 @@ class BranchSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['request'].user
         agency = Agency.objects.get(user=user)
-        validated_data['agency'] = agency
+        
+        #Add the curretn agency to the data
+        
 
-        branch = Branch.objects.create(**validated_data)
         
         # *** Add location ***
         # Set location manually
@@ -128,6 +135,16 @@ class BranchSerializer(serializers.ModelSerializer):
         # branch.latitude = location_data.get('lat', None)
         # branch.longitude = location_data.get('lng', None)
 
+        #user account creation
+        user_data=validated_data.pop('user')
+        branch_user=UserSerializer.create(self,user_data)
+        branch_user.role='branch_admin'
+        branch_user.save()
+        #Add user to the data
+        validated_data['user']=branch_user
+        validated_data['agency'] = agency
+        #branch creation
+        branch=Branch.objects.create(**validated_data)
         branch.save()
         return branch
     
@@ -143,7 +160,8 @@ class BranchSerializer(serializers.ModelSerializer):
     
         
 class BranchDetailsSerializer(serializers.ModelSerializer):
-    agency=AgencySerializer(read_only=True)
+    user = UserSerializer(read_only=True)
+    agency=AgencyDetailSerializer(read_only=True)
     wilaya = WilayaSerializer()
     class Meta:
         model=Branch
@@ -262,7 +280,7 @@ from api_main.serializers import ProfileDetailsSerializer
 # Reservation serializer that allows the agencies to display thier reservations and can only accept or decline 
 
 class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
-    agency=AgencyDetailSerializer(read_only=True)
+    branch=BranchDetailsSerializer(read_only=True)
     vehicle=VehicleDetailsSerializer(read_only=True)
     client=ProfileDetailsSerializer(read_only=True)
     start_date=serializers.DateField(read_only=True)

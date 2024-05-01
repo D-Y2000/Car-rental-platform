@@ -40,7 +40,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('agency_admin', 'Agency Admin'),
-        ('agency_employer', 'Agency Employer'),
+        ('branch_admin', 'Branch Admin'),
         ('default', 'Default'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='default')

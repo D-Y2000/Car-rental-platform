@@ -17,6 +17,10 @@ urlpatterns = [
     path('agencies/vehicle/images/<int:pk>/',VehicleImageDelete.as_view()),
     #Agency reservations
     path('agency/reservations/',ReservationList.as_view()),
+    #if the user is a branch admin then it'll return branch reservations
+    #if the user is a agency admin then it'll return all  reservations related to the agency
+    #if the parameter branch_pk is given in the url (agency/reservation/?branch_pk=<branch_pk>)
+    #then it'll return the  reservations belonging to the branch with the specific pk of the agency
     path('agency/reservations/<int:pk>/',ReservationDetails.as_view()),
     path('agency/reservations/<int:pk>/accept/',AcceptReservation.as_view()),
     path('agency/reservations/<int:pk>/refuse/',RefuseReservation.as_view()),

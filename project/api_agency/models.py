@@ -58,7 +58,10 @@ class Wilaya(models.Model):
 # after agency validation (Validate) a main branch gonna be created , related to this agency with same info
 # Agency admin can create as mlany branches as he want
 class Branch(models.Model):
-    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name='my_branches')
+
+    user = models.ForeignKey(User,on_delete= models.CASCADE,related_name='my_branch',null=True)
+    
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name='my_branches')    
     
     name = models.CharField(max_length=150)
 
@@ -77,7 +80,6 @@ class Branch(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.agency.name}"
-
 # ====== VEHICLE MODEL OPTIONS ======
 # Make, Model, Type, Energy, Transmission, Options
 class Make(models.Model):
@@ -218,7 +220,7 @@ class Reservation(models.Model):
         ('postponed', 'Postponed'),
     )
     
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE,related_name="my_reservations",null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete = models.CASCADE)
     client = models.ForeignKey(Profile, on_delete = models.CASCADE)
 

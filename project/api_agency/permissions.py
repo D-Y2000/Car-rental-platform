@@ -32,7 +32,7 @@ class IsAgencyOwnerOrReadOnly(permissions.BasePermission):
         user=request.user
         return obj.user == user
     
-    
+#the same thing as IsAgencyOrReadOnly
 class CanCreateBranches(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         
@@ -46,6 +46,11 @@ class CanCreateBranches(permissions.BasePermission):
 
 
 class CanRudBranches(permissions.BasePermission):
+    def has_permission(self, request, view):
+
+        user = request.user
+        return user.role == 'agency_admin' or user.role == 'branch_admin'
+
     def has_object_permission(self, request, view, obj):
         # if request.method in permissions.SAFE_METHODS:
         #     return True
@@ -54,39 +59,42 @@ class CanRudBranches(permissions.BasePermission):
         user=request.user
 
 
-        return obj.agency.user == user
+        return obj.agency.user == user or obj.user == user
     
 
 class IsBranchOwner(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
+        
         user=request.user
-        agency=Agency.objects.get(user=user)
-        branches=Branch.objects.filter(agency=agency)
-        if branches.exists():
-            return True
-        else:
-            return False
-
-
-
+        return user.role == 'branch_admin'
 
 class CanRudVehicles(permissions.BasePermission):
+    def has_permission(self, request, view):
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        user = request.user
+        return user.role == 'agency_admin' or user.role == 'branch_admin'
+    
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
         # only the user of the agency that owns this vehicle can edit or delete
         user=request.user
-        return obj.owned_by.agency.user==user
+        return (obj.owned_by.agency.user==user) or (obj.owned_by.user == user)
     
 
 class CanRudReservation(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return user.role == 'agency_admin' or user.role == 'branch_admin'
     def has_object_permission(self, request, view, obj):
         user=request.user
-        return obj.agency.user == user
+        return (obj.branch.user == user) or (obj.branch.agency.user == user)
 
 class CanDestroyVehicleImage(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user=request.user
-        return obj.vehicle.owned_by.agency.user==user
+        return (obj.vehicle.owned_by.agency.user == user) or (obj.vehicle.owned_by.user == user)

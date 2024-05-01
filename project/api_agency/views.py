@@ -81,8 +81,9 @@ class AgencyBranches(generics.ListAPIView):
         return branches
     
 
+
 class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes=[IsAuthenticated,IsAgency,CanRudBranches]
+    permission_classes=[IsAuthenticated,CanRudBranches]
     queryset=Branch.objects.all()
     
     def get_serializer_class(self):
@@ -119,7 +120,8 @@ def vehicles_models(request,pk):
 
 class ListVehicles(generics.ListCreateAPIView):
     # serializer_class=VehicleSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
+    # permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
+    permission_classes=[IsAuthenticatedOrReadOnly,CanRudVehicles]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
     filterset_class = VehcilePriceFilter
@@ -141,26 +143,47 @@ class ListVehicles(generics.ListCreateAPIView):
         return vehicles
     
 
+    # def create(self, request, *args, **kwargs):
+    #     agency=Agency.objects.get(user=request.user)
+    #     branches=Branch.objects.filter(agency=agency)
+    #     branch_pk=request.data.get('owned_by')
+    #     # search if the given branch is actually linked to the conneted agency
+    #     try :
+    #         branch=Branch.objects.get(pk=branch_pk)
+    #         if branch in branches:
+    #             # if True permission granted to create vehicle and assign it to the branch
+    #             return super().create(request, *args, **kwargs) 
+    #         else:
+    #             return Response("you can't perfor this action",status=status.HTTP_400_BAD_REQUEST)    
+    #     except Branch.DoesNotExist:
+    #         return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
+
     def create(self, request, *args, **kwargs):
-        agency=Agency.objects.get(user=request.user)
-        branches=Branch.objects.filter(agency=agency)
-        branch_pk=request.data.get('owned_by')
-        # search if the given branch is actually linked to the conneted agency
-        try :
-            branch=Branch.objects.get(pk=branch_pk)
-            if branch in branches:
-                # if True permission granted to create vehicle and assign it to the branch
-                return super().create(request, *args, **kwargs) 
-            else:
-                return Response("you can't perfor this action",status=status.HTTP_400_BAD_REQUEST)    
-        except Branch.DoesNotExist:
-            return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
+        #check if the user is branch or agency
+
+        if request.user.role == 'branch_admin':
+            branch = Branch.objects.get(user = request.user)
+            request.data['owned_by']=branch.pk
+            print(request.data)
+        elif request.user.role == 'agency_admin':
+            agency = Agency.objects.get(user=request.user)
+            try :
+                branch_pk = request.data['owned_by']
+                branch = Branch.objects.get(pk=branch_pk)
+                if branch.agency == agency:
+                    request.data['owned_by']=branch.pk
+                else:
+                    raise Branch.DoesNotExist
+            except Branch.DoesNotExist:
+                return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
+        return super().create(request, *args, **kwargs)
+
 
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAgencyOrReadOnly,
-        IsBranchOwner,
+        # IsAgencyOrReadOnly,
+        # IsBranchOwner,
         CanRudVehicles
     ]
     queryset = Vehicle.objects.all()
@@ -172,24 +195,26 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
 
 
     def update(self, request, *args, **kwargs):
-        agency=Agency.objects.get(user=request.user)
-        branches=Branch.objects.filter(agency=agency)
-        branch_pk=request.data.get('owned_by')
-    
-        try :
-            branch=Branch.objects.get(pk=branch_pk)
-            print(f'branch: {branch}')
-            if branch in branches:
-                return super().update(request, *args, **kwargs)
-            else:
-                return Response("you can't perform this action",status=status.HTTP_400_BAD_REQUEST)    
-        except Branch.DoesNotExist:
-            return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
-
+        if request.user.role == 'branch_admin':
+                branch = Branch.objects.get(user = request.user)
+                pass 
+        elif request.user.role == 'agency_admin':
+            agency = Agency.objects.get(user=request.user)
+            try :
+                branch_pk = request.data['owned_by']
+                branch = Branch.objects.get(pk=branch_pk)
+                if branch.agency == agency:
+                    request.data['owned_by']=branch.pk
+                else:
+                    raise Branch.DoesNotExist
+            except Branch.DoesNotExist:
+                return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
+        return super().update(request, *args, **kwargs)
         
     def delete(self, request, *args, **kwargs):
         instance=self.get_object()
         instance.is_deleted=True
+        instance.is_available=False
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -215,26 +240,38 @@ class AgencyVehicles(generics.ListAPIView):
 #list the reservation of the logged  agency
 class ReservationList(generics.ListAPIView):
     serializer_class=AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency]
+    permission_classes=[permissions.IsAuthenticated,CanRudReservation]
 
     def get_queryset(self):
         user=self.request.user
-        agency=Agency.objects.get(user=user)
-        resrvations=Reservation.objects.filter(agency=agency)
+        if user.role == 'agency_admin':
+            agency=Agency.objects.get(user=user)
+            branch_pk = self.request.GET.get('branch_pk') # we can send it in the request body
+            resrvations=Reservation.objects.filter(branch__agency=agency)
+            if branch_pk:#if branch_pk is sent by the agency we can filter reservation by branch id 
+                try:
+                    branch=Branch.objects.get(pk=branch_pk)
+                    if branch.agency != agency:
+                        raise ValidationError("You don't have permission")
+                except Branch.DoesNotExist:
+                    raise ValidationError("Branch with ID {} does not exist".format(branch_pk))
+                resrvations = resrvations.filter(branch = branch_pk)
+        elif user.role == 'branch_admin':
+            branch = Branch.objects.get(user = user)
+            resrvations = Reservation.objects.filter(branch = branch)
         return resrvations
     
 # display and edit a specific reservation (accept or decline)
 class ReservationDetails(generics.RetrieveAPIView):
     serializer_class=AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    permission_classes=[permissions.IsAuthenticated,CanRudReservation]
     queryset=Reservation.objects.all()
-
 
 
 class AcceptReservation(generics.UpdateAPIView):
     queryset = Reservation.objects.all()
     serializer_class = AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    permission_classes=[permissions.IsAuthenticated,CanRudReservation]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -255,13 +292,13 @@ class AcceptReservation(generics.UpdateAPIView):
 class RefuseReservation(generics.UpdateAPIView):
     queryset = Reservation.objects.all()
     serializer_class = AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    permission_classes=[permissions.IsAuthenticated,CanRudReservation]
 
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # Mark the reservation as accepted
+        # Mark the reservation as refused
         instance.status='refused'
         instance.save()
         serializer = self.get_serializer(instance)
@@ -274,7 +311,7 @@ class RateAgency(generics.CreateAPIView):
     serializer_class = RateSerializer
     queryset = Rate.objects.all()
     permission_classes= [permissions.IsAuthenticated,IsDefault,]
-
+    
 
 class AgencyRatings(generics.ListAPIView):
     serializer_class = RateDetailsSerializer
