@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+
 from rest_framework.decorators import api_view,permission_classes
 from api_agency.serializers import *
 from rest_framework.response import Response
@@ -10,7 +10,8 @@ from rest_framework.authtoken.views import *
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from api_main.permissions import IsDefault
-from django.http import Http404
+from api_agency.filters import VehcilePriceFilter
+
 
 # Create your views here.
 
@@ -120,9 +121,9 @@ class ListVehicles(generics.ListCreateAPIView):
     # serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
-    filterset_fields = ['owned_by__wilaya','engine','transmission','type','price','options']
-    search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','price','options__name']
-
+    filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
+    filterset_class = VehcilePriceFilter
+    search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','options__name']
     def get_serializer_class(self):
         if self.request.method=='GET':
             return VehicleDetailsSerializer
@@ -131,6 +132,12 @@ class ListVehicles(generics.ListCreateAPIView):
 
     def  get_queryset(self):
         vehicles=Vehicle.objects.filter(is_available=True,is_deleted=False)
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+        if min_price :
+            vehicles = vehicles.filter(price__gte=min_price)
+        if max_price :
+            vehicles = vehicles.filter(price__lte=max_price)
         return vehicles
     
 

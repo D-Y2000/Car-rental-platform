@@ -1,13 +1,8 @@
-from django.shortcuts import render
 from rest_framework import generics
 from api_main.serializers import *
 from api_main.models import *
 from rest_framework import permissions
 from api_main.permissions import *
-from rest_framework.decorators import api_view,permission_classes
-from rest_framework.response import Response
-from api_agency.permissions import IsAgency
-from rest_framework import status
 
 
 # Create your views here.
@@ -43,8 +38,21 @@ class MyReservations(generics.ListCreateAPIView):
         user=self.request.user
         reservations=Reservation.objects.filter(client__user=user)
         return reservations
-    
 
+    def perform_create(self, serializer):
+        #get the logged client
+        client = Profile.objects.get(user = self.request.user)
+        serializer_data=serializer.validated_data
+        vehicle = serializer_data.get('vehicle')
+        start_date = serializer_data['start_date']
+        end_date = serializer_data['end_date']
+        total_days = (end_date-start_date).days
+        total_price = total_days * vehicle.price
+        # add calculated data to the serializer validated data
+        serializer.validated_data['total_days']=total_days
+        serializer.validated_data['total_price']=total_price
+        serializer.validated_data['client']=client
+        return super().perform_create(serializer)
 # Display and edit (change date or vehicle or delete) a specific reservation for the logged in client if the reservation is postponed
 class Myreservation(generics.RetrieveUpdateDestroyAPIView):
     serializer_class= ClientReservationDetailsSerializer

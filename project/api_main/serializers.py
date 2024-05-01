@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from api_main.models import Profile
-from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer,RateSerializer
-from api_auth.serializers import UserSerializer,UserDetailsSerializer
-from api_agency.models import Reservation,Rate
+from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer
+from api_auth.serializers import UserSerializer
+from api_agency.models import Reservation
+
+
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -37,16 +39,8 @@ class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
         fields = "__all__"
-
-    def create(self, validated_data):
-        profile=Profile.objects.get(user=self.context['request'].user)
-        validated_data['client']=profile
-        reservation=Reservation.objects.create(**validated_data)
-        reservation.total_days = (reservation.end_date - reservation.start_date).days
-        reservation.total_price = reservation.total_days * reservation.vehicle.price
-        reservation.save()
-        return reservation
-
+        
+                
 #client reservation serializer to display or update the reservation
 class ClientReservationDetailsSerializer(serializers.ModelSerializer):
     agency=AgencyDetailSerializer(read_only=True)
