@@ -57,7 +57,6 @@ class MyReservations(generics.ListCreateAPIView):
         serializer.validated_data['client']=client
         serializer.validated_data['branch']=branch
         serializer.validated_data['agency']=agency
-        print(serializer.validated_data)
         return super().perform_create(serializer)
 
 # Display and edit (change date or vehicle or delete) a specific reservation for the logged in client if the reservation is postponed
