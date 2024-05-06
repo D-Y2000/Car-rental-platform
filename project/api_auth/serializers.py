@@ -26,3 +26,26 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields=["id","first_name","last_name","email","role"]
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password],required = False)
+    password2 = serializers.CharField(write_only=True,required = False)
+
+    class Meta:
+        model = User
+        fields=["id","first_name","last_name",'password','password2']
+
+    
+    def validate(self, attrs):
+        if attrs.get('password'):
+            if attrs['password'] != attrs['password2']:
+                raise serializers.ValidationError(
+                {"password": "Password fields didn't match."})
+        return attrs
+    
+    def update(self, instance, validated_data):
+        if validated_data.get('password'):
+            instance.set_password(validated_data['password'])
+            validated_data.pop('password','password2')
+        return super().update(instance, validated_data)
+    

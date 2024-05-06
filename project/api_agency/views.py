@@ -333,6 +333,15 @@ def agencyOverview(request):
     serializer=OverviewAgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsBranchOwner])
+def branchOverview(request):
+    user=request.user
+    branch=Branch.objects.get(user=user)
+    serializer=OverviewBranchSerializer(branch)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
 
 @api_view(['GET'])
 def get_details(request):

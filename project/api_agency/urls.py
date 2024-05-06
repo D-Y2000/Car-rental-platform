@@ -31,6 +31,7 @@ urlpatterns = [
     #Branches
     path('branches/',Branches.as_view()),
     path('branches/<int:pk>/',BranchDetails.as_view()),
+    path('branch/overview/',agencyOverview),
     #search and filter view + creation
     path('makes/',vehicles_makes),
     path('makes/<int:pk>/models/',vehicles_models),
