@@ -218,7 +218,7 @@ class Reservation(models.Model):
         ('postponed', 'Postponed'),
     )
     
-    # agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations",null=True,blank=True)
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations",null=True,blank=True)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE,related_name="reservations",null=True,blank=True)
 
     vehicle = models.ForeignKey(Vehicle, on_delete = models.CASCADE)

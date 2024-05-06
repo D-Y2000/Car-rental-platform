@@ -3,8 +3,11 @@ from api_agency.views import *
 
 urlpatterns = [
     #Agency
+    #this endpoint accept GET and POST requests for Listing and creating new agencies.
     path('agencies/',Agencies.as_view()),
+    #This endpoint accepts GET,PUT,PATCH and DELETE requests to retreive,update and destroy agency object.
     path('agencies/<int:pk>/',AgencyDetails.as_view()),
+    
     path('agency/profile/',agencyProfile),
     #agency overview(readonly)
     path('agency/overview/',agencyOverview),
