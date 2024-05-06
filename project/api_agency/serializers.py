@@ -292,10 +292,3 @@ class OverviewAgencySerializer(serializers.ModelSerializer):
     class Meta:
         model=Agency
         fields="__all__"
-
-
-class OverviewBranchSerializer(serializers.ModelSerializer):
-    my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
-    class Meta:
-        model=Branch
-        exclude = ['agency']

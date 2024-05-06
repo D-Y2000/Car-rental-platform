@@ -45,6 +45,7 @@ class MyReservations(generics.ListCreateAPIView):
         serializer_data=serializer.validated_data
         vehicle = serializer_data.get('vehicle')
         branch = vehicle.owned_by
+        agency = branch.agency
         start_date = serializer_data['start_date']
         end_date = serializer_data['end_date']
         total_days = (end_date-start_date).days
@@ -55,6 +56,8 @@ class MyReservations(generics.ListCreateAPIView):
         serializer.validated_data['total_price']=total_price
         serializer.validated_data['client']=client
         serializer.validated_data['branch']=branch
+        serializer.validated_data['agency']=agency
+        print(serializer.validated_data)
         return super().perform_create(serializer)
 
 # Display and edit (change date or vehicle or delete) a specific reservation for the logged in client if the reservation is postponed
