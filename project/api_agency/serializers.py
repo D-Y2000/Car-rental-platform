@@ -263,6 +263,7 @@ from api_main.serializers import ProfileDetailsSerializer
 
 class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
     agency=AgencyDetailSerializer(read_only=True)
+    branch=BranchDetailsSerializer(read_only=True)
     vehicle=VehicleDetailsSerializer(read_only=True)
     client=ProfileDetailsSerializer(read_only=True)
     start_date=serializers.DateField(read_only=True)
@@ -291,3 +292,10 @@ class OverviewAgencySerializer(serializers.ModelSerializer):
     class Meta:
         model=Agency
         fields="__all__"
+
+
+class OverviewBranchSerializer(serializers.ModelSerializer):
+    my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
+    class Meta:
+        model=Branch
+        exclude = ['agency']
