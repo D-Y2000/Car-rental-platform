@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from api_main.models import Profile
-from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer
+from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer,BranchDetailsSerializer
 from api_auth.serializers import UserSerializer
 from api_agency.models import Reservation
 
@@ -35,18 +35,26 @@ class ProfileDetailsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReservationSerializer(serializers.ModelSerializer):
-    client=ProfileDetailsSerializer(read_only=True)
+    # client=ProfileDetailsSerializer(read_only=True)
     class Meta:
         model = Reservation
-        fields = "__all__"
+        fields = ['vehicle','start_date','end_date']
         
                 
 #client reservation serializer to display or update the reservation
 class ClientReservationDetailsSerializer(serializers.ModelSerializer):
-    agency=AgencyDetailSerializer(read_only=True)
+    # agency=AgencyDetailSerializer(read_only=True)
+    branch=BranchDetailsSerializer(read_only=True)
     vehicle=VehicleDetailsSerializer()
     client=ProfileDetailsSerializer(read_only=True)
     status=serializers.CharField(read_only=True)
     class Meta:
         model = Reservation
         fields = "__all__"
+
+
+
+class EditReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reservation
+        fields = ['start_date','end_date']

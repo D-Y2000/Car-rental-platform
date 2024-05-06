@@ -217,11 +217,20 @@ class ReservationList(generics.ListAPIView):
     serializer_class=AgencyReservationDetailsSerializer
     permission_classes=[permissions.IsAuthenticated,IsAgency]
 
+    # def get_queryset(self):
+    #     user=self.request.user
+    #     agency=Agency.objects.get(user=user)
+    #     resrvations=Reservation.objects.filter(agency=agency)
+    #     return resrvations
+    
     def get_queryset(self):
         user=self.request.user
         agency=Agency.objects.get(user=user)
-        resrvations=Reservation.objects.filter(agency=agency)
-        return resrvations
+        branch_pk = self.request.GET.get('branch_pk')
+        reservations = Reservation.objects.filter(branch__agency=agency)
+        if branch_pk :
+            reservations= reservations.filter(branch=branch_pk)
+        return reservations
     
 # display and edit a specific reservation (accept or decline)
 class ReservationDetails(generics.RetrieveAPIView):
@@ -295,6 +304,18 @@ def agencyOverview(request):
     agency=Agency.objects.get(user=user)
     serializer=OverviewAgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAgency])
+def branchOverview(request,pk):
+    user=request.user
+    agency=Agency.objects.get(user=user)
+    try:
+        branch=Branch.objects.get(agency=agency,pk=pk)
+        serializer = OverviewBranchSerializer(branch)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    except Branch.DoesNotExist:
+        raise ValidationError("Branch with ID {} does not exist".format(pk))
 
 
 @api_view(['GET'])
