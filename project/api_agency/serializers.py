@@ -275,11 +275,11 @@ class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
 
 # OVERVIEW (AGENCY / BRANCH)
 class OverviewBranchSerializer(serializers.ModelSerializer):
-    my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
-    my_reservations=AgencyReservationDetailsSerializer(many=True,read_only=True)
+    my_vehicles = VehicleDetailsSerializer(many=True, read_only=True)    
+    reservations = AgencyReservationDetailsSerializer(many=True, read_only=True)
     
     class Meta:
-        model=Branch
+        model= Branch
         exclude = ['agency']
 
 class OverviewAgencySerializer(serializers.ModelSerializer):
