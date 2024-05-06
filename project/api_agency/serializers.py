@@ -273,15 +273,14 @@ class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
         model = Reservation
         fields = "__all__"
 
-#Agency over view (readOnly)
-
+# OVERVIEW (AGENCY / BRANCH)
 class OverviewBranchSerializer(serializers.ModelSerializer):
     my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
+    my_reservations=AgencyReservationDetailsSerializer(many=True,read_only=True)
+    
     class Meta:
         model=Branch
         exclude = ['agency']
-
-
 
 class OverviewAgencySerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
@@ -292,10 +291,3 @@ class OverviewAgencySerializer(serializers.ModelSerializer):
     class Meta:
         model=Agency
         fields="__all__"
-
-
-class OverviewBranchSerializer(serializers.ModelSerializer):
-    my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
-    class Meta:
-        model=Branch
-        exclude = ['agency']
