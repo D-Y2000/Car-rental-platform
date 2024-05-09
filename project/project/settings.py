@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'api_agency.apps.ApiAgencyConfig',
     'api_main.apps.ApiMainConfig',
     'api_auth.apps.ApiAuthConfig',
+    'django_extensions',
 ]
 
 REST_FRAMEWORK = {
@@ -201,3 +202,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://caroussa.vercel.app',
     'https://safarbladi.vercel.app'
     ]
+
+
+#GRAPHS 
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}
