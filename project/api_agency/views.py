@@ -335,3 +335,10 @@ def get_wilayas(request):
     wilayas=Wilaya.objects.all()
     serializer=WilayaSerializer(wilayas,many=True)
     return Response(data=serializer.data,status=status.HTTP_200_OK)
+
+# Get available plans
+@api_view(['GET'])
+def get_plans(request):
+    plan = Plan.objects.all()
+    serializer = PlanSerializer(plan, many=True)
+    return Response(data = serializer.data, status = status.HTTP_200_OK)

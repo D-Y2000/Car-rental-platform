@@ -63,5 +63,7 @@ urlpatterns = [
     path('wilayas/',get_wilayas),
     #Accepts GET request and returns all existing wilayas.
      
+    # get Plans
+    path('plans/',get_plans),
 
 ]
