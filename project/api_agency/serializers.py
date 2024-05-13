@@ -337,3 +337,9 @@ class OverviewAgencySerializer(serializers.ModelSerializer):
     class Meta:
         model=Agency
         fields="__all__"
+
+
+class NotifcationSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Notification
+        fields = ["id","message","reservation","timestamp","is_read"]

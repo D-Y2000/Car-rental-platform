@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from api_auth.models import User
+from api_auth.permissions import CanReadNotification
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -15,6 +16,8 @@ from rest_framework import generics
 #     serializer=UserDetailsSerializer(user)
 #     return Response(serializer.data,status=status.HTTP_200_OK)
 
+from api_agency.models import Notification
+from api_agency.serializers import NotifcationSerializer
 
 
 
@@ -30,3 +33,22 @@ class UserProfile(generics.RetrieveUpdateDestroyAPIView):
     def get_object(self):
         user =self.request.user
         return user
+
+class UserListNotifications(generics.ListAPIView):
+    permission_classes= [IsAuthenticated]
+    serializer_class = NotifcationSerializer
+    def get_queryset(self):
+        user = self.request.user
+        notifications = Notification.objects.filter(user=user)
+        return notifications
+    
+class UserNotificationDetails(generics.RetrieveAPIView):
+    permission_classes= [IsAuthenticated,CanReadNotification]
+    queryset = Notification.objects.all()
+    serializer_class = NotifcationSerializer
+    def get_object(self):
+        instance = super().get_object()
+        instance.is_read = True
+        instance.save()
+        return instance
+    
