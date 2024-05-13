@@ -7,4 +7,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('user/me/',UserProfile.as_view()),
+    path('user/notifications/',UserListNotifications.as_view()),
+    path('user/notifications/<int:pk>/',UserNotificationDetails.as_view()),
     ]
