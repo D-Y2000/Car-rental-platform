@@ -51,6 +51,12 @@ class PlanSerializer(serializers.ModelSerializer):
                 "unlimited_branches",
                 ]
 
+class SubscriptionCreateSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Subscription
+        fields=['plan']
+        
+
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan = PlanSerializer(read_only=True)
     class Meta:

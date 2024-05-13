@@ -1,3 +1,4 @@
+from datetime import datetime,timedelta
 from django.db import models
 from api_main.models import Profile
 from api_auth.models import User
@@ -36,7 +37,7 @@ class Subscription(models.Model):
     def save(self, *args, **kwargs):
         if not self.end_at:
             # Set end_at to one month after created_at
-            self.end_at = self.created_at + relativedelta(months=1)
+            self.end_at = datetime.now() + relativedelta(months=1)
         super().save(*args, **kwargs)
 
 
