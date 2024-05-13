@@ -41,6 +41,24 @@ def agencyProfile(request):
     serializer=AgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
+class AgencySubscription(generics.ListCreateAPIView):
+    queryset = Subscription.objects.all()
+    permission_classes = [IsAuthenticated,IsAgency]
+
+ 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return SubscriptionCreateSerializer
+        else:
+            return SubscriptionSerializer
+        
+    def perform_create(self, serializer):
+        user = self.request.user
+        agency = Agency.objects.get(user=user)
+        serializer.validated_data['agency'] = agency
+        return super().perform_create(serializer)
+    
+
 
 #------------------Branches-------------#
 

@@ -42,7 +42,7 @@ urlpatterns = [
     #Accepts POST request and create a rate for the agency with the given pk.
     path('agencies/<int:pk>/ratings/',AgencyRatings.as_view()),
     #Acceptes GET request and returns the ratings of the agency with the given pk.
-
+    path('agency/subscribe/',AgencySubscription.as_view()),
     #Branches
     path('branches/',Branches.as_view()),
     #Accepts GET,POST requests and creates a new branch or list all existing branches.
