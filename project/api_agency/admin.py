@@ -1,11 +1,15 @@
 from django.contrib import admin
-from api_agency.models import * 
-# Register your models here.
+from api_agency import models 
 
-admin.site.register(User)
-admin.site.register(Agency)
-admin.site.register(Branch)
-admin.site.register(Make)
-admin.site.register(Model)
-admin.site.register(Vehicle)
-admin.site.register(Reservation)
+admin.site.register(models.User)
+admin.site.register(models.Agency)
+admin.site.register(models.Branch)
+admin.site.register(models.Make)
+admin.site.register(models.Model)
+admin.site.register(models.Vehicle)
+admin.site.register(models.Wilaya)
+admin.site.register(models.Reservation)
+admin.site.register(models.Notification)
+admin.site.register(models.Rate)
+admin.site.register(models.Plan)
+admin.site.register(models.Subscription)

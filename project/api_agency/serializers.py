@@ -1,7 +1,8 @@
+from django.forms import ValidationError
 from rest_framework import serializers
 from api_agency.models import *
 from api_auth.serializers import UserSerializer
-
+from django.utils import timezone
 
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
@@ -37,9 +38,55 @@ class AgencySerializer(serializers.ModelSerializer):
         branch.save()
 
         return agency
-    
+            
+class PlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Plan
+        fields=["id",
+                "name",
+                "price",
+                "max_vehicles",
+                "max_branches",
+                "unlimited_vehicles",
+                "unlimited_branches",
+                ]
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    plan = PlanSerializer(read_only=True)
+    class Meta:
+        model = Subscription
+        fields = ["id",
+                "plan",
+                "created_at",
+                "end_at",
+                ]
+                
 class AgencyDetailSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
+    
+    # access only the last subscription of the agency
+    my_subscriptions = serializers.SerializerMethodField()
+    def get_my_subscriptions(self, obj):
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        if last_subscription:
+            return SubscriptionSerializer(last_subscription).data
+        return None
+    
+
+    # A boolean field to indecate if the agency is in pro plan
+    is_pro = serializers.SerializerMethodField()
+    def get_is_pro(self, obj):
+        # get last subscription
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        # check if last subscription is Pro plan and valid
+        if last_subscription:
+            now = timezone.now()
+            return (
+                last_subscription.plan.name == "Pro" and
+                last_subscription.end_at is not None and
+                last_subscription.end_at > now
+            )
+        return False
     class Meta:
         model=Agency
         fields=["id",
@@ -55,11 +102,55 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "website",
                 "is_validated",
                 "created_at",
+                "my_subscriptions",
+                "is_pro"
                 ]
+
+
+class RateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rate
+        fields = ["rate"]
+
+    def create(self, validated_data):
+        user =self.context['request'].user
+        agency_pk = self.context['view'].kwargs.get('pk')
+        try:
+            agency=Agency.objects.get(pk=agency_pk)
+            validated_data['user']=user
+            validated_data['agency']=agency
+            print(validated_data)
+            print(agency_pk)
+            return super().create(validated_data)
+        except Agency.DoesNotExist:
+            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+        
+
+
+        
+        
+    
+class RateDetailsSerializer(serializers.ModelSerializer):
+    # agency = AgencyDetailSerializer(many=False,read_only=True,)
+    agency= serializers.SlugRelatedField(slug_field='name',read_only=True)
+    user = UserSerializer(many=False,read_only=True)
+
+    class Meta:
+        model = Rate
+        fields = "__all__"
+
+
 
 class LocationSerializer(serializers.Serializer):
     lat = serializers.DecimalField(max_digits=50, decimal_places=30)
     lng = serializers.DecimalField(max_digits=50, decimal_places=30)
+
+
+
+class WilayaSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Wilaya
+        fields="__all__"
 
 class BranchSerializer(serializers.ModelSerializer):
     agency=AgencySerializer(read_only=True)
@@ -97,13 +188,18 @@ class BranchSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
     
         
+class BranchDetailsSerializer(serializers.ModelSerializer):
+    agency=AgencySerializer(read_only=True)
+    wilaya = WilayaSerializer()
+    class Meta:
+        model=Branch
+        fields="__all__"
 class VehicleImageSerializer(serializers.ModelSerializer):
     class Meta:
         model=VehicleImage
         fields="__all__"
     
 class VehicleSerializer(serializers.ModelSerializer):
-    owned_by=BranchSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child = serializers.ImageField(max_length = 1000000, allow_empty_file=True, use_url = False),
@@ -120,10 +216,6 @@ class VehicleSerializer(serializers.ModelSerializer):
         #check if there are images uploaded if so remove them from the validated data to create vehicle
         if uploaded_images:
             validated_data.pop("uploaded_images")
-        user=self.context['request'].user
-        agency=Agency.objects.get(user=user)
-        branch=Branch.objects.filter(agency=agency)
-        validated_data['owned_by']=branch.first()
         #check if there are options in the validated data 
         options=validated_data.get('options', [])
         if options:
@@ -202,7 +294,7 @@ class VehicleDetailsSerializer(serializers.ModelSerializer):
     transmission=TransmissionSerializer()
     type=TypeSerializer()
     options=TypeSerializer(many=True)
-    owned_by=BranchSerializer(read_only=True)
+    owned_by=BranchDetailsSerializer(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     class Meta:
         model=Vehicle
@@ -217,6 +309,7 @@ from api_main.serializers import ProfileDetailsSerializer
 
 class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
     agency=AgencyDetailSerializer(read_only=True)
+    branch=BranchDetailsSerializer(read_only=True)
     vehicle=VehicleDetailsSerializer(read_only=True)
     client=ProfileDetailsSerializer(read_only=True)
     start_date=serializers.DateField(read_only=True)
@@ -226,15 +319,14 @@ class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
         model = Reservation
         fields = "__all__"
 
-#Agency over view (readOnly)
-
+# OVERVIEW (AGENCY / BRANCH)
 class OverviewBranchSerializer(serializers.ModelSerializer):
-    my_vehicles=VehicleDetailsSerializer(many=True,read_only=True)
+    my_vehicles = VehicleDetailsSerializer(many=True, read_only=True)    
+    reservations = AgencyReservationDetailsSerializer(many=True, read_only=True)
+    
     class Meta:
-        model=Branch
+        model= Branch
         exclude = ['agency']
-
-
 
 class OverviewAgencySerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)

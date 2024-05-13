@@ -2,13 +2,49 @@ from django.db import models
 from api_main.models import Profile
 from api_auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from dateutil.relativedelta import relativedelta
+
+
+# Subscription Plan
+# Free or Pro
+class Plan(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
+
+    # *** Limits ***
+    # IF unlimited is True, then max value (limitation) is ignored
+    unlimited_vehicles = models.BooleanField(default=False)
+    unlimited_branches = models.BooleanField(default=False)
+
+    # Limitation only for not unlimited (ignored whene unlimited is True)
+    max_branches = models.PositiveSmallIntegerField(default=1)
+    max_vehicles = models.PositiveSmallIntegerField(default=1)
+    
+
+    def __str__(self) -> str:
+        return self.name
+
+class Subscription(models.Model):
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE, related_name='my_subscriptions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Note: end_at initialized for one month after created_at
+    end_at = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.end_at:
+            # Set end_at to one month after created_at
+            self.end_at = self.created_at + relativedelta(months=1)
+        super().save(*args, **kwargs)
 
 
 # the agency model just a profile of agency that can ber rolled by agency owner which is just a user with role agency_owner 
 # the agency need to be validate by the admin (Platform Owner) to be able to use the system
 class Agency(models.Model):
-    
-    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='my_agency')
+    # User represents the admin of the agency or the owner who created the agency [One Admin]
+    user = models.OneToOneField(User,on_delete=models.CASCADE, related_name='my_agency')
     is_validated = models.BooleanField(default=False)
 
     name = models.CharField(max_length=150, null=False, blank=False)
@@ -20,6 +56,7 @@ class Agency(models.Model):
     website = models.URLField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     address = models.CharField(max_length=255, blank=True)
+    rate  = models.FloatField(default=0,)
 
 
     license_doc = models.ImageField(null=True,blank=True)
@@ -29,6 +66,23 @@ class Agency(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+        return self.name
+
+class Rate(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name="my_ratings")
+    rate  = models.FloatField(validators=[MinValueValidator(1.0), MaxValueValidator(5.0)], default=1.0)
+
+class Wilaya(models.Model):
+    code = models.IntegerField(blank=True)
+    name = models.CharField(max_length=200, blank=True)
+    ar_name = models.CharField(max_length=200, blank=True)
+    longitude = models.CharField(max_length=50, null=True, blank=True)
+    latitude = models.CharField(max_length=50, null=True, blank=True)
+    class Meta:
+        ordering=['code']
+    
+    def __str__(self) -> str:
         return self.name
 
 # Note that Agency Class is just a profile of agency
@@ -48,6 +102,7 @@ class Branch(models.Model):
     latitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
     longitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
     address = models.CharField(max_length=255, blank=True)
+    wilaya = models.ForeignKey(Wilaya,on_delete = models.CASCADE,null=True,blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -109,11 +164,16 @@ class Vehicle(models.Model):
     doors = models.PositiveSmallIntegerField(null=True, blank=True)
     options = models.ManyToManyField(Option, blank=True)
     is_available=models.BooleanField(default=True)
+    is_deleted=models.BooleanField(default=False)
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
-    # *** Price/Day ***
-
+    # *** Pricing ***
+    # Price can be diffirent per time
+    # Price per day, Price per week, Price per month
+    # => Default Price is per day
     price = models.DecimalField(max_digits=8, decimal_places=2)
+    price_per_week = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    price_per_month = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
     # *** rental conditions ***
     min_rental_days = models.PositiveSmallIntegerField(
@@ -176,7 +236,6 @@ class VehicleImage(models.Model):
 # => due to a circular import
 # from api_main.models import Profile
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
 # Reservation model
@@ -190,7 +249,9 @@ class Reservation(models.Model):
         ('postponed', 'Postponed'),
     )
     
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations")
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations",null=True,blank=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE,related_name="reservations",null=True,blank=True)
+
     vehicle = models.ForeignKey(Vehicle, on_delete = models.CASCADE)
     client = models.ForeignKey(Profile, on_delete = models.CASCADE)
 
@@ -203,3 +264,13 @@ class Reservation(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Reservation by {self.client.first_name} for {self.vehicle.get_title()}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    reservation = models.ForeignKey(Reservation,on_delete=models.CASCADE,null=True,blank=True)

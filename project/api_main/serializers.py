@@ -1,8 +1,11 @@
 from rest_framework import serializers
 from api_main.models import Profile
-from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer
-from api_auth.serializers import UserSerializer,UserDetailsSerializer
+from api_agency.serializers import AgencyDetailSerializer,VehicleDetailsSerializer,BranchDetailsSerializer
+from api_auth.serializers import UserSerializer
 from api_agency.models import Reservation
+
+
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     user=UserSerializer()
@@ -32,26 +35,26 @@ class ProfileDetailsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReservationSerializer(serializers.ModelSerializer):
-    client=ProfileDetailsSerializer(read_only=True)
+    # client=ProfileDetailsSerializer(read_only=True)
     class Meta:
         model = Reservation
-        fields = "__all__"
-
-    def create(self, validated_data):
-        profile=Profile.objects.get(user=self.context['request'].user)
-        validated_data['client']=profile
-        reservation=Reservation.objects.create(**validated_data)
-        reservation.total_days = (reservation.end_date - reservation.start_date).days
-        reservation.total_price = reservation.total_days * reservation.vehicle.price
-        reservation.save()
-        return reservation
-
+        fields = ['vehicle','start_date','end_date']
+        
+                
 #client reservation serializer to display or update the reservation
 class ClientReservationDetailsSerializer(serializers.ModelSerializer):
     agency=AgencyDetailSerializer(read_only=True)
-    vehicle=VehicleDetailsSerializer()
+    branch=BranchDetailsSerializer(read_only=True)
+    vehicle=VehicleDetailsSerializer(read_only=True)
     client=ProfileDetailsSerializer(read_only=True)
     status=serializers.CharField(read_only=True)
     class Meta:
         model = Reservation
         fields = "__all__"
+
+
+
+class EditReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reservation
+        fields = ['start_date','end_date']

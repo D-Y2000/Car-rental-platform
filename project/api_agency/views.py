@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+
 from rest_framework.decorators import api_view,permission_classes
 from api_agency.serializers import *
 from rest_framework.response import Response
@@ -9,6 +9,9 @@ from rest_framework import generics
 from rest_framework.authtoken.views import *
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from api_main.permissions import IsDefault
+from api_agency.filters import VehcilePriceFilter
+
 
 # Create your views here.
 
@@ -46,16 +49,30 @@ class Branches(generics.ListCreateAPIView):
     serializer_class=BranchSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly]
 
+    def get_serializer_class(self):
+
+        if self.request.method == 'GET':
+            return BranchDetailsSerializer
+        elif self.request.method == 'POST':
+            return BranchSerializer
 
 
 class BranchDetails(generics.RetrieveAPIView):
     queryset=Branch.objects.all()
-    serializer_class=BranchSerializer
+    serializer_class=BranchDetailsSerializer
     permission_classes=[permissions.AllowAny]
 
 
+class BranchVehicles(generics.ListAPIView):
+    serializer_class=VehicleDetailsSerializer
+    permission_classes=[permissions.AllowAny]
+    def get_queryset(self):
+        pk= self.kwargs['pk']
+        vehicles=Vehicle.objects.filter(owned_by=pk,is_deleted=False)
+        return vehicles
+
 class AgencyBranches(generics.ListAPIView):
-    serializer_class=BranchSerializer
+    serializer_class=BranchDetailsSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,CanCreateBranches]
 
     def get_queryset(self):
@@ -65,9 +82,15 @@ class AgencyBranches(generics.ListAPIView):
     
 
 class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class=BranchSerializer
     permission_classes=[IsAuthenticated,IsAgency,CanRudBranches]
     queryset=Branch.objects.all()
+    
+    def get_serializer_class(self):
+
+        if self.request.method == 'GET':
+            return BranchDetailsSerializer
+        else:
+            return BranchSerializer
 
 
 
@@ -98,9 +121,9 @@ class ListVehicles(generics.ListCreateAPIView):
     # serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
-    filterset_fields = ['owned_by','make','model','current_location','engine','transmission','type','price','options']
-    search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','price','options__name']
-
+    filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
+    filterset_class = VehcilePriceFilter
+    search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','options__name']
     def get_serializer_class(self):
         if self.request.method=='GET':
             return VehicleDetailsSerializer
@@ -108,8 +131,30 @@ class ListVehicles(generics.ListCreateAPIView):
             return VehicleSerializer
 
     def  get_queryset(self):
-        vehicles=Vehicle.objects.filter(is_available=True)
+        vehicles=Vehicle.objects.filter(is_available=True,is_deleted=False)
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+        if min_price :
+            vehicles = vehicles.filter(price__gte=min_price)
+        if max_price :
+            vehicles = vehicles.filter(price__lte=max_price)
         return vehicles
+    
+
+    def create(self, request, *args, **kwargs):
+        agency=Agency.objects.get(user=request.user)
+        branches=Branch.objects.filter(agency=agency)
+        branch_pk=request.data.get('owned_by')
+        # search if the given branch is actually linked to the conneted agency
+        try :
+            branch=Branch.objects.get(pk=branch_pk)
+            if branch in branches:
+                # if True permission granted to create vehicle and assign it to the branch
+                return super().create(request, *args, **kwargs) 
+            else:
+                return Response("you can't perfor this action",status=status.HTTP_400_BAD_REQUEST)    
+        except Branch.DoesNotExist:
+            return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
 
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
@@ -122,8 +167,34 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method=='GET':
             return VehicleDetailsSerializer
-        elif self.request.method in ['PUT', 'PATCH']:
+        else:
             return VehicleSerializer
+
+
+    def update(self, request, *args, **kwargs):
+        agency=Agency.objects.get(user=request.user)
+        branches=Branch.objects.filter(agency=agency)
+        branch_pk=request.data.get('owned_by')
+    
+        try :
+            branch=Branch.objects.get(pk=branch_pk)
+            print(f'branch: {branch}')
+            if branch in branches:
+                return super().update(request, *args, **kwargs)
+            else:
+                return Response("you can't perform this action",status=status.HTTP_400_BAD_REQUEST)    
+        except Branch.DoesNotExist:
+            return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
+
+        
+    def delete(self, request, *args, **kwargs):
+        instance=self.get_object()
+        instance.is_deleted=True
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
 
 class VehicleImageDelete(generics.DestroyAPIView):
     queryset=VehicleImage.objects.all()
@@ -138,7 +209,7 @@ class AgencyVehicles(generics.ListAPIView):
     queryset=Vehicle.objects.all()
     def get_queryset(self):
         pk= self.kwargs['pk']
-        vehicles=Vehicle.objects.filter(owned_by__agency=pk)
+        vehicles=Vehicle.objects.filter(owned_by__agency=pk,is_deleted=False)
         return vehicles
         
 #list the reservation of the logged  agency
@@ -146,11 +217,20 @@ class ReservationList(generics.ListAPIView):
     serializer_class=AgencyReservationDetailsSerializer
     permission_classes=[permissions.IsAuthenticated,IsAgency]
 
+    # def get_queryset(self):
+    #     user=self.request.user
+    #     agency=Agency.objects.get(user=user)
+    #     resrvations=Reservation.objects.filter(agency=agency)
+    #     return resrvations
+    
     def get_queryset(self):
         user=self.request.user
         agency=Agency.objects.get(user=user)
-        resrvations=Reservation.objects.filter(agency=agency)
-        return resrvations
+        branch_pk = self.request.GET.get('branch_pk')
+        reservations = Reservation.objects.filter(branch__agency=agency)
+        if branch_pk :
+            reservations= reservations.filter(branch=branch_pk)
+        return reservations
     
 # display and edit a specific reservation (accept or decline)
 class ReservationDetails(generics.RetrieveAPIView):
@@ -197,8 +277,25 @@ class RefuseReservation(generics.UpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
+# Agency Rate
+
+class RateAgency(generics.CreateAPIView):
+    serializer_class = RateSerializer
+    queryset = Rate.objects.all()
+    permission_classes= [permissions.IsAuthenticated,IsDefault,]
 
 
+class AgencyRatings(generics.ListAPIView):
+    serializer_class = RateDetailsSerializer
+
+    def get_queryset(self):
+        try :
+            agency_pk=self.kwargs["pk"]
+            agency=Agency.objects.get(pk=agency_pk)
+            ratings=Rate.objects.filter(agency=agency)
+            return ratings
+        except Agency.DoesNotExist:
+            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,IsAgency])
@@ -207,6 +304,18 @@ def agencyOverview(request):
     agency=Agency.objects.get(user=user)
     serializer=OverviewAgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAgency])
+def branchOverview(request,pk):
+    user=request.user
+    agency=Agency.objects.get(user=user)
+    try:
+        branch=Branch.objects.get(agency=agency,pk=pk)
+        serializer = OverviewBranchSerializer(branch)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    except Branch.DoesNotExist:
+        raise ValidationError("Branch with ID {} does not exist".format(pk))
 
 
 @api_view(['GET'])
@@ -219,3 +328,17 @@ def get_details(request):
     }
 
     return Response(data=data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_wilayas(request):
+    wilayas=Wilaya.objects.all()
+    serializer=WilayaSerializer(wilayas,many=True)
+    return Response(data=serializer.data,status=status.HTTP_200_OK)
+
+# Get available plans
+@api_view(['GET'])
+def get_plans(request):
+    plan = Plan.objects.all()
+    serializer = PlanSerializer(plan, many=True)
+    return Response(data = serializer.data, status = status.HTTP_200_OK)
