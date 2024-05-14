@@ -1,5 +1,4 @@
 from datetime import datetime,timedelta
-from typing import Iterable
 from django.db import models
 from api_main.models import Profile
 from api_auth.models import User
