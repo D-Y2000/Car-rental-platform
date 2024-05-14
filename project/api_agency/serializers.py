@@ -107,6 +107,7 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "address",
                 "website",
                 "is_validated",
+                "rate",
                 "created_at",
                 "my_subscriptions",
                 "is_pro"
@@ -125,8 +126,6 @@ class RateSerializer(serializers.ModelSerializer):
             agency=Agency.objects.get(pk=agency_pk)
             validated_data['user']=user
             validated_data['agency']=agency
-            print(validated_data)
-            print(agency_pk)
             return super().create(validated_data)
         except Agency.DoesNotExist:
             raise ValidationError("Agency with ID {} does not exist".format(agency_pk))

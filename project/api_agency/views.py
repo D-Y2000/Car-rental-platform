@@ -24,7 +24,11 @@ class Agencies(generics.ListCreateAPIView):
     serializer_class = AgencySerializer
     permission_classes = [permissions.AllowAny]
 
-
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AgencySerializer
+        else:
+            return AgencyDetailSerializer
 
 
 class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
