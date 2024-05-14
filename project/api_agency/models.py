@@ -68,7 +68,8 @@ class Agency(models.Model):
 
     def __str__(self):
         return self.name
-
+    
+    
 class Rate(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
     agency = models.ForeignKey(Agency,on_delete=models.CASCADE,related_name="my_ratings")
