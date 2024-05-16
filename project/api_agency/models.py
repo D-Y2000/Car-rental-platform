@@ -269,6 +269,9 @@ class Reservation(models.Model):
 
     def __str__(self) -> str:
         return f"Reservation by {self.client.first_name} for {self.vehicle.get_title()}"
+    
+    class Meta:
+        ordering=['-created_at']
 
 class Notification(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -276,3 +279,6 @@ class Notification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     reservation = models.ForeignKey(Reservation,on_delete=models.CASCADE,null=True,blank=True)
+    
+    class Meta:
+        ordering=['-timestamp']
