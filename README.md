@@ -1,4 +1,4 @@
-# Car-rental-platform
+# Car Rental Platform (Backend)
 
 A Platform that allow individuals to rent cars from multiple agencies
 
@@ -21,12 +21,22 @@ A Platform that allow individuals to rent cars from multiple agencies
 
     # setup db
     py manage.py makemirations
-    py manage.py migrate
 
-    # create admin user (superuser)
-    py manage.py createsuperuser
+### set up migration
+    
+    py .\manage.py migrate
+    py .\manage.py loaddata wilaya.json
+    py .\manage.py loaddata commune.json
+    py .\manage.py loaddata makes.json
+    py .\manage.py loaddata models.json
+    py .\manage.py loaddata energy.json
+    py .\manage.py loaddata transmission.json
+    py .\manage.py loaddata type.json
+    py .\manage.py loaddata type.json
+    py .\manage.py loaddata options.json
 
-    # run localhost
+### Run localhost
+
     py manage.py runserver
 
 ## About API

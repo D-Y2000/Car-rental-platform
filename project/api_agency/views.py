@@ -24,7 +24,11 @@ class Agencies(generics.ListCreateAPIView):
     serializer_class = AgencySerializer
     permission_classes = [permissions.AllowAny]
 
-
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AgencySerializer
+        else:
+            return AgencyDetailSerializer
 
 
 class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
@@ -40,6 +44,24 @@ def agencyProfile(request):
     agency=Agency.objects.get(user=user)
     serializer=AgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+class AgencySubscription(generics.ListCreateAPIView):
+    queryset = Subscription.objects.all()
+    permission_classes = [IsAuthenticated,IsAgency]
+
+ 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return SubscriptionCreateSerializer
+        else:
+            return SubscriptionSerializer
+        
+    def perform_create(self, serializer):
+        user = self.request.user
+        agency = Agency.objects.get(user=user)
+        serializer.validated_data['agency'] = agency
+        return super().perform_create(serializer)
+    
 
 
 #------------------Branches-------------#
@@ -335,3 +357,10 @@ def get_wilayas(request):
     wilayas=Wilaya.objects.all()
     serializer=WilayaSerializer(wilayas,many=True)
     return Response(data=serializer.data,status=status.HTTP_200_OK)
+
+# Get available plans
+@api_view(['GET'])
+def get_plans(request):
+    plan = Plan.objects.all()
+    serializer = PlanSerializer(plan, many=True)
+    return Response(data = serializer.data, status = status.HTTP_200_OK)

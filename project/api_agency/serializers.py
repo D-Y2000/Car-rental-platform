@@ -1,13 +1,34 @@
 from django.forms import ValidationError
-from django.http import Http404, HttpResponse, JsonResponse
-from rest_framework.response import Response
 from rest_framework import serializers
 from api_agency.models import *
 from api_auth.serializers import UserSerializer
-from rest_framework import status
+from django.utils import timezone
 
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
+    # access only the last subscription of the agency
+    my_subscriptions = serializers.SerializerMethodField()
+    def get_my_subscriptions(self, obj):
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        if last_subscription:
+            return SubscriptionSerializer(last_subscription).data
+        return None
+    
+
+    # A boolean field to indecate if the agency is in pro plan
+    is_pro = serializers.SerializerMethodField()
+    def get_is_pro(self, obj):
+        # get last subscription
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        # check if last subscription is Pro plan and valid
+        if last_subscription:
+            now = timezone.now()
+            return (
+                last_subscription.plan.name == "Pro" and
+                last_subscription.end_at is not None and
+                last_subscription.end_at > now
+            )
+        return False
     class Meta:
         model=Agency
         fields=["id",
@@ -22,8 +43,12 @@ class AgencySerializer(serializers.ModelSerializer):
                 "address",
                 "website",
                 "is_validated",
+                "rate",
                 "created_at",
+                "my_subscriptions",
+                "is_pro"
                 ]
+
     
     def create(self, validated_data):
         #user account creation
@@ -40,9 +65,61 @@ class AgencySerializer(serializers.ModelSerializer):
         branch.save()
 
         return agency
-    
+            
+class PlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Plan
+        fields=["id",
+                "name",
+                "price",
+                "max_vehicles",
+                "max_branches",
+                "unlimited_vehicles",
+                "unlimited_branches",
+                ]
+
+class SubscriptionCreateSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Subscription
+        fields=['plan']
+        
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    plan = PlanSerializer(read_only=True)
+    class Meta:
+        model = Subscription
+        fields = ["id",
+                "plan",
+                "created_at",
+                "end_at",
+                ]
+                
 class AgencyDetailSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
+    
+    # access only the last subscription of the agency
+    my_subscriptions = serializers.SerializerMethodField()
+    def get_my_subscriptions(self, obj):
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        if last_subscription:
+            return SubscriptionSerializer(last_subscription).data
+        return None
+    
+
+    # A boolean field to indecate if the agency is in pro plan
+    is_pro = serializers.SerializerMethodField()
+    def get_is_pro(self, obj):
+        # get last subscription
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        # check if last subscription is Pro plan and valid
+        if last_subscription:
+            now = timezone.now()
+            return (
+                last_subscription.plan.name == "Pro" and
+                last_subscription.end_at is not None and
+                last_subscription.end_at > now
+            )
+        return False
     class Meta:
         model=Agency
         fields=["id",
@@ -57,9 +134,12 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "address",
                 "website",
                 "is_validated",
+                "rate",
                 "created_at",
+                "my_subscriptions",
+                "is_pro"
                 ]
-        
+
 
 class RateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,8 +153,6 @@ class RateSerializer(serializers.ModelSerializer):
             agency=Agency.objects.get(pk=agency_pk)
             validated_data['user']=user
             validated_data['agency']=agency
-            print(validated_data)
-            print(agency_pk)
             return super().create(validated_data)
         except Agency.DoesNotExist:
             raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
@@ -291,3 +369,9 @@ class OverviewAgencySerializer(serializers.ModelSerializer):
     class Meta:
         model=Agency
         fields="__all__"
+
+
+class NotifcationSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Notification
+        fields = ["id","message","reservation","timestamp","is_read"]
