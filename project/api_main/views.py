@@ -22,7 +22,11 @@ class ProfileList(generics.ListCreateAPIView):
 class ProfileDetails(generics.RetrieveUpdateDestroyAPIView):
     serializer_class=ProfileDetailsSerializer
     queryset=Profile.objects.all()
-    permission_classes=[permissions.IsAuthenticatedOrReadOnly,IsProfileOwner]
+    permission_classes=[permissions.IsAuthenticated, IsDefault ,IsProfileOwner]
+
+    def get_object(self):
+        profile = Profile.objects.get(user = self.request.user)
+        return profile
 
 #list or create reservatoin for the logged in client
 class MyReservations(generics.ListCreateAPIView):
