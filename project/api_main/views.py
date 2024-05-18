@@ -70,7 +70,7 @@ class MyReservations(generics.ListCreateAPIView):
 class Myreservation(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ClientReservationDetailsSerializer
     queryset = Reservation.objects.all()
-    permission_classes =
+    permission_classes =  ClientReservationDetailsSerializer
     [permissions.IsAuthenticated,
      IsDefault, CanEditResrvation, CandDeleteReservation]
 
