@@ -21,8 +21,7 @@ class ProfileList(generics.ListCreateAPIView):
 class ProfileDetails(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileDetailsSerializer
     queryset = Profile.objects.all()
-    permission_classes = [
-        permissions.IsAuthenticated, IsProfileOwner]
+    permission_classes = [permissions.IsAuthenticated, IsProfileOwner]
 
     def get_object(self):
         profile = Profile.objects.get(user=self.request.user)
@@ -71,8 +70,9 @@ class MyReservations(generics.ListCreateAPIView):
 class Myreservation(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ClientReservationDetailsSerializer
     queryset = Reservation.objects.all()
-    permission_classes = [permissions.IsAuthenticated,
-                          IsDefault, CanEditResrvation, CandDeleteReservation]
+    permission_classes =
+    [permissions.IsAuthenticated,
+     IsDefault, CanEditResrvation, CandDeleteReservation]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
