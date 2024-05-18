@@ -6,6 +6,29 @@ from django.utils import timezone
 
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
+    # access only the last subscription of the agency
+    my_subscriptions = serializers.SerializerMethodField()
+    def get_my_subscriptions(self, obj):
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        if last_subscription:
+            return SubscriptionSerializer(last_subscription).data
+        return None
+    
+
+    # A boolean field to indecate if the agency is in pro plan
+    is_pro = serializers.SerializerMethodField()
+    def get_is_pro(self, obj):
+        # get last subscription
+        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        # check if last subscription is Pro plan and valid
+        if last_subscription:
+            now = timezone.now()
+            return (
+                last_subscription.plan.name == "Pro" and
+                last_subscription.end_at is not None and
+                last_subscription.end_at > now
+            )
+        return False
     class Meta:
         model=Agency
         fields=["id",
@@ -20,8 +43,12 @@ class AgencySerializer(serializers.ModelSerializer):
                 "address",
                 "website",
                 "is_validated",
+                "rate",
                 "created_at",
+                "my_subscriptions",
+                "is_pro"
                 ]
+
     
     def create(self, validated_data):
         #user account creation
