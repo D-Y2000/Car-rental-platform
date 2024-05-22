@@ -38,7 +38,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     # client=ProfileDetailsSerializer(read_only=True)
     class Meta:
         model = Reservation
-        fields = ['vehicle','start_date','end_date']
+        fields = ['id','vehicle','start_date','end_date']
         
                 
 #client reservation serializer to display or update the reservation
