@@ -140,7 +140,6 @@ def vehicles_models(request,pk):
 
 
 class ListVehicles(generics.ListCreateAPIView):
-    # serializer_class=VehicleSerializer
     permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
@@ -164,6 +163,10 @@ class ListVehicles(generics.ListCreateAPIView):
     
 
     def create(self, request, *args, **kwargs):
+        print("create vehicle...")
+        img = request.data.get('uploaded_images')
+        for i in img:
+            print("img", i.get('url'), i.get('order'))
         agency=Agency.objects.get(user=request.user)
         branches=Branch.objects.filter(agency=agency)
         branch_pk=request.data.get('owned_by')
