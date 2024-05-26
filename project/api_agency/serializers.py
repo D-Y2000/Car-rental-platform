@@ -269,21 +269,18 @@ class VehicleSerializer(serializers.ModelSerializer):
         return vehicle
         
     def update(self, instance, validated_data):
-        uploaded_images = validated_data.get('uploaded_images', [])
-        #check if there are images uploaded if so remove them from the validated data to create vehicle
-        if uploaded_images:
-            validated_data.pop("uploaded_images")
-        if uploaded_images:
-            for url in uploaded_images:
-                newvehicle_image = VehicleImage.objects.create(vehicle=instance, image = url)
-                newvehicle_image.save()
+        uploaded_images = validated_data.pop('uploaded_images')
+        options=validated_data.pop('options')
 
-        #check if there are options in the validated data 
-        options=validated_data.get('options', [])
         if options:
-            #extract options from validated data
-            validated_data.pop('options')
             instance.options.set(options)
+         
+        if uploaded_images:
+            for image_data in uploaded_images:
+                image_url = image_data.get('url')
+                order = image_data.get('order')
+                VehicleImage.objects.create(vehicle=instance, url=image_url, order = order).save()
+        
         instance.save()
 
         return super().update(instance, validated_data)
