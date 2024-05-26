@@ -226,6 +226,7 @@ class BranchDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Branch
         fields="__all__"
+
 class VehicleImageSerializer(serializers.ModelSerializer):
     class Meta:
         model=VehicleImage
@@ -233,34 +234,38 @@ class VehicleImageSerializer(serializers.ModelSerializer):
     
 class VehicleSerializer(serializers.ModelSerializer):
     images = VehicleImageSerializer(many=True, read_only=True)
+
     uploaded_images = serializers.ListField(
-        child = serializers.ImageField(max_length = 1000000, allow_empty_file=True, use_url = False),
-        allow_empty=True,
+        child=serializers.DictField(
+            child=serializers.JSONField(),  # Use JSONField to handle nested dict fields
+        ),
         required=False,
-        write_only=True)
+        write_only=True
+    )
+    
     class Meta:
         model=Vehicle
         fields="__all__"
         extra_fields=["uploaded_images"]
 
     def create(self, validated_data):
-        uploaded_images = validated_data.get('uploaded_images', [])
-        #check if there are images uploaded if so remove them from the validated data to create vehicle
-        if uploaded_images:
-            validated_data.pop("uploaded_images")
-        #check if there are options in the validated data 
-        options=validated_data.get('options', [])
-        if options:
-            #extract options from validated data
-            validated_data.pop('options')
-        vehicle=Vehicle.objects.create(**validated_data)
-        #set the options manually because it is a many to many relation
-        vehicle.options.set(options)
+        uploaded_images = validated_data.pop('uploaded_images')
+        options=validated_data.pop('options')
+
+        vehicle = Vehicle.objects.create(**validated_data)
         vehicle.save()
+
+        if options:
+            vehicle.options.set(options)
+         
         if uploaded_images:
-            for image in uploaded_images:
-                newvehicle_image = VehicleImage.objects.create(vehicle=vehicle, image=image)
-                newvehicle_image.save()
+            for image_data in uploaded_images:
+                image_url = image_data.get('url')
+                order = image_data.get('order')
+                VehicleImage.objects.create(vehicle=vehicle, url=image_url, order = order).save()
+        
+        vehicle.save()
+
         return vehicle
         
     def update(self, instance, validated_data):
@@ -269,8 +274,8 @@ class VehicleSerializer(serializers.ModelSerializer):
         if uploaded_images:
             validated_data.pop("uploaded_images")
         if uploaded_images:
-            for image in uploaded_images:
-                newvehicle_image = VehicleImage.objects.create(vehicle=instance, image=image)
+            for url in uploaded_images:
+                newvehicle_image = VehicleImage.objects.create(vehicle=instance, image = url)
                 newvehicle_image.save()
 
         #check if there are options in the validated data 

@@ -225,12 +225,14 @@ def vehicle_image_path(instance, filename):
     return 'images/vehicles/{0}/{1}/{2}'.format(instance.vehicle.owned_by.name,instance.vehicle.id,filename)
 
 class VehicleImage(models.Model):
-    vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE,related_name='images')
-    image=models.ImageField(upload_to=vehicle_image_path)
-    created_at=models.DateTimeField(auto_now_add=True)
-
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='images')
+    url = models.URLField(default=('https://placehold.co/600x400'),null=True,blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    created_at=models.DateTimeField(auto_now_add = True)
     def __str__(self) -> str:
         return f"{self.vehicle} -- {self.created_at}"
+    class Meta:
+        ordering = ['order']
 
 
 # Ahh hell no,
