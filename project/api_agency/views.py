@@ -1,17 +1,17 @@
 
 from rest_framework.decorators import api_view,permission_classes
-from api_agency.serializers import *
+from api_agency import serializers
 from rest_framework.response import Response
 from rest_framework import status
-from api_agency.permissions import *
-from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
+from api_agency import permissions
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework import generics
-from rest_framework.authtoken.views import *
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from api_main.permissions import IsDefault
 from api_agency.filters import VehcilePriceFilter
 from django.db.models import F
+from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan 
 
 
 # Create your views here.
@@ -22,40 +22,40 @@ from django.db.models import F
 class Agencies(generics.ListCreateAPIView):
 
     queryset = Agency.objects.all()
-    serializer_class = AgencySerializer
-    permission_classes = [permissions.AllowAny]
+    serializer_class = serializers.AgencySerializer
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return AgencySerializer
+            return serializers.AgencySerializer
         else:
-            return AgencyDetailSerializer
+            return serializers.AgencyDetailSerializer
 
 
 class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Agency.objects.all()
-    serializer_class = AgencyDetailSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly,IsAgencyOwnerOrReadOnly]
+    serializer_class = serializers.AgencyDetailSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly,permissions.IsAgencyOwnerOrReadOnly]
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated,IsAgency])
+@permission_classes([IsAuthenticated,permissions.IsAgency])
 def agencyProfile(request):
     user=request.user
     agency=Agency.objects.get(user=user)
-    serializer=AgencySerializer(agency)
+    serializer=serializers.AgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 class AgencySubscription(generics.ListCreateAPIView):
     queryset = Subscription.objects.all()
-    permission_classes = [IsAuthenticated,IsAgency]
+    permission_classes = [IsAuthenticated,permissions.IsAgency]
 
  
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return SubscriptionCreateSerializer
+            return serializers.SubscriptionCreateSerializer
         else:
-            return SubscriptionSerializer
+            return serializers.SubscriptionSerializer
         
     def perform_create(self, serializer):
         user = self.request.user
@@ -69,34 +69,34 @@ class AgencySubscription(generics.ListCreateAPIView):
 
 class Branches(generics.ListCreateAPIView):
     queryset=Branch.objects.all()
-    serializer_class=BranchSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly]
+    serializer_class=serializers.BranchSerializer
+    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly]
 
     def get_serializer_class(self):
 
         if self.request.method == 'GET':
-            return BranchDetailsSerializer
+            return serializers.BranchDetailsSerializer
         elif self.request.method == 'POST':
-            return BranchSerializer
+            return serializers.BranchSerializer
 
 
 class BranchDetails(generics.RetrieveAPIView):
     queryset=Branch.objects.all()
-    serializer_class=BranchDetailsSerializer
-    permission_classes=[permissions.AllowAny]
+    serializer_class=serializers.BranchDetailsSerializer
+    permission_classes=[AllowAny]
 
 
 class BranchVehicles(generics.ListAPIView):
-    serializer_class=VehicleDetailsSerializer
-    permission_classes=[permissions.AllowAny]
+    serializer_class=serializers.VehicleDetailsSerializer
+    permission_classes=[AllowAny]
     def get_queryset(self):
         pk= self.kwargs['pk']
         vehicles=Vehicle.objects.filter(owned_by=pk,is_deleted=False)
         return vehicles
 
 class AgencyBranches(generics.ListAPIView):
-    serializer_class=BranchDetailsSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,CanCreateBranches]
+    serializer_class=serializers.BranchDetailsSerializer
+    permission_classes=[IsAuthenticatedOrReadOnly,permissions.CanCreateBranches]
 
     def get_queryset(self):
         pk= self.kwargs['pk']
@@ -105,15 +105,15 @@ class AgencyBranches(generics.ListAPIView):
     
 
 class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes=[IsAuthenticated,IsAgency,CanRudBranches]
+    permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanRudBranches]
     queryset=Branch.objects.all()
     
     def get_serializer_class(self):
 
         if self.request.method == 'GET':
-            return BranchDetailsSerializer
+            return serializers.BranchDetailsSerializer
         else:
-            return BranchSerializer
+            return serializers.BranchSerializer
 
 
 
@@ -124,7 +124,7 @@ class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['GET'])
 def vehicles_makes(request):
     makes=Make.objects.all()
-    serializer=MakeSerializer(makes,many=True)
+    serializer=serializers.MakeSerializer(makes,many=True)
 
     return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -132,7 +132,7 @@ def vehicles_makes(request):
 @api_view(['GET'])
 def vehicles_models(request,pk):
     models=Model.objects.filter(make_id=pk)
-    serializer=ModelSerializer(models,many=True)
+    serializer=serializers.ModelSerializer(models,many=True)
 
     return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -141,16 +141,16 @@ def vehicles_models(request,pk):
 
 
 class ListVehicles(generics.ListCreateAPIView):
-    permission_classes=[IsAuthenticatedOrReadOnly,IsAgencyOrReadOnly,IsBranchOwner]
+    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly,permissions.IsBranchOwner]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
     filterset_class = VehcilePriceFilter
     search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','options__name']
     def get_serializer_class(self):
         if self.request.method=='GET':
-            return VehicleDetailsSerializer
+            return serializers.VehicleDetailsSerializer
         elif self.request.method=='POST':
-            return VehicleSerializer
+            return serializers.VehicleSerializer
 
     def  get_queryset(self):
         vehicles=Vehicle.objects.filter(is_available=True,is_deleted=False)
@@ -193,16 +193,16 @@ class ListVehicles(generics.ListCreateAPIView):
 class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAgencyOrReadOnly,
-        IsBranchOwner,
-        CanRudVehicles
+        permissions.IsAgencyOrReadOnly,
+        permissions.IsBranchOwner,
+        permissions.CanRudVehicles
     ]
     queryset = Vehicle.objects.all()
     def get_serializer_class(self):
         if self.request.method=='GET':
-            return VehicleDetailsSerializer
+            return serializers.VehicleDetailsSerializer
         else:
-            return VehicleSerializer
+            return serializers.VehicleSerializer
 
 
     def update(self, request, *args, **kwargs):
@@ -232,14 +232,14 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
 
 class VehicleImageDelete(generics.DestroyAPIView):
     queryset=VehicleImage.objects.all()
-    serializer_class=VehicleImageSerializer
-    permission_classes=[IsAuthenticated,IsAgency,CanDestroyVehicleImage]
+    serializer_class=serializers.VehicleImageSerializer
+    permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanDestroyVehicleImage]
     
 
 
 class AgencyVehicles(generics.ListAPIView):
-    serializer_class=VehicleDetailsSerializer
-    permission_classes=[permissions.AllowAny]
+    serializer_class=serializers.VehicleDetailsSerializer
+    permission_classes=[AllowAny]
     queryset=Vehicle.objects.all()
     def get_queryset(self):
         pk= self.kwargs['pk']
@@ -248,14 +248,8 @@ class AgencyVehicles(generics.ListAPIView):
         
 #list the reservation of the logged  agency
 class ReservationList(generics.ListAPIView):
-    serializer_class=AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency]
-
-    # def get_queryset(self):
-    #     user=self.request.user
-    #     agency=Agency.objects.get(user=user)
-    #     resrvations=Reservation.objects.filter(agency=agency)
-    #     return resrvations
+    serializer_class=serializers.AgencyReservationDetailsSerializer
+    permission_classes=[IsAuthenticated,permissions.IsAgency]
     
     def get_queryset(self):
         user=self.request.user
@@ -268,16 +262,16 @@ class ReservationList(generics.ListAPIView):
     
 # display and edit a specific reservation (accept or decline)
 class ReservationDetails(generics.RetrieveAPIView):
-    serializer_class=AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    serializer_class=serializers.AgencyReservationDetailsSerializer
+    permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanRudReservation]
     queryset=Reservation.objects.all()
 
 
 
 class AcceptReservation(generics.UpdateAPIView):
     queryset = Reservation.objects.all()
-    serializer_class = AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    serializer_class = serializers.AgencyReservationDetailsSerializer
+    permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanRudReservation]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -297,8 +291,8 @@ class AcceptReservation(generics.UpdateAPIView):
 
 class RefuseReservation(generics.UpdateAPIView):
     queryset = Reservation.objects.all()
-    serializer_class = AgencyReservationDetailsSerializer
-    permission_classes=[permissions.IsAuthenticated,IsAgency,CanRudReservation]
+    serializer_class = serializers.AgencyReservationDetailsSerializer
+    permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanRudReservation]
 
 
     def update(self, request, *args, **kwargs):
@@ -314,13 +308,13 @@ class RefuseReservation(generics.UpdateAPIView):
 # Agency Rate
 
 class RateAgency(generics.CreateAPIView):
-    serializer_class = RateSerializer
+    serializer_class = serializers.RateSerializer
     queryset = Rate.objects.all()
-    permission_classes= [permissions.IsAuthenticated,IsDefault,]
+    permission_classes= [IsAuthenticated,IsDefault,]
 
 
 class AgencyRatings(generics.ListAPIView):
-    serializer_class = RateDetailsSerializer
+    serializer_class = serializers.RateDetailsSerializer
 
     def get_queryset(self):
         try :
@@ -329,36 +323,36 @@ class AgencyRatings(generics.ListAPIView):
             ratings=Rate.objects.filter(agency=agency)
             return ratings
         except Agency.DoesNotExist:
-            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+            raise serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated,IsAgency])
+@permission_classes([IsAuthenticated,permissions.IsAgency])
 def agencyOverview(request):
     user=request.user
     agency=Agency.objects.get(user=user)
-    serializer=OverviewAgencySerializer(agency)
+    serializer=serializers.Overviewserializers.AgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated,IsAgency])
+@permission_classes([IsAuthenticated,permissions.IsAgency])
 def branchOverview(request,pk):
     user=request.user
     agency=Agency.objects.get(user=user)
     try:
         branch=Branch.objects.get(agency=agency,pk=pk)
-        serializer = OverviewBranchSerializer(branch)
+        serializer = serializers.Overviewserializers.BranchSerializer(branch)
         return Response(serializer.data,status=status.HTTP_200_OK)
     except Branch.DoesNotExist:
-        raise ValidationError("Branch with ID {} does not exist".format(pk))
+        raise serializers.ValidationError("Branch with ID {} does not exist".format(pk))
 
 
 @api_view(['GET'])
 def get_details(request):
     data={
-    'types':TypeSerializer(Type.objects.all(),many=True).data,
-    'energies':EnergySerializer(Energy.objects.all(),many=True).data,
-    'transmissions':TransmissionSerializer(Transmission.objects.all(),many=True).data,
-    'options':OptionSerializer(Option.objects.all(),many=True).data
+    'types': serializers.TypeSerializer(Type.objects.all(),many=True).data,
+    'energies': serializers.EnergySerializer(Energy.objects.all(),many=True).data,
+    'transmissions': serializers.TransmissionSerializer(Transmission.objects.all(),many=True).data,
+    'options': serializers.OptionSerializer(Option.objects.all(),many=True).data
     }
 
     return Response(data=data,status=status.HTTP_200_OK)
@@ -367,12 +361,12 @@ def get_details(request):
 @api_view(['GET'])
 def get_wilayas(request):
     wilayas=Wilaya.objects.all()
-    serializer=WilayaSerializer(wilayas,many=True)
+    serializer=serializers.WilayaSerializer(wilayas,many=True)
     return Response(data=serializer.data,status=status.HTTP_200_OK)
 
 # Get available plans
 @api_view(['GET'])
 def get_plans(request):
     plan = Plan.objects.all()
-    serializer = PlanSerializer(plan, many=True)
+    serializer = serializers.PlanSerializer(plan, many=True)
     return Response(data = serializer.data, status = status.HTTP_200_OK)
