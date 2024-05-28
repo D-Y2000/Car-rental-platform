@@ -81,11 +81,23 @@ class Wilaya(models.Model):
     ar_name = models.CharField(max_length=200, blank=True)
     longitude = models.CharField(max_length=50, null=True, blank=True)
     latitude = models.CharField(max_length=50, null=True, blank=True)
+
+    clicks_count = models.PositiveIntegerField(default=0)
+
     class Meta:
         ordering=['code']
     
     def __str__(self) -> str:
         return self.name
+
+class LocationImage(models.Model):
+    wilaya = models.ForeignKey(Wilaya, on_delete=models.CASCADE, related_name='images')
+    url = models.URLField(default=('https://placehold.co/600x400'),null=True,blank=True)
+    
+    created_at=models.DateTimeField(auto_now_add = True)
+    def __str__(self) -> str:
+        return f"{self.vehicle} -- {self.created_at}"
+
 
 # Note that Agency Class is just a profile of agency
 # an Agency can have many branches, each have a different location and different rate

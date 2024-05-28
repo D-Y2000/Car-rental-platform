@@ -11,6 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from api_main.permissions import IsDefault
 from api_agency.filters import VehcilePriceFilter
+from django.db.models import F
 
 
 # Create your views here.
@@ -161,6 +162,14 @@ class ListVehicles(generics.ListCreateAPIView):
             vehicles = vehicles.filter(price__lte=max_price)
         return vehicles
     
+
+    # increment the clicks_count of the wilaya each time you list vehicles in a certain wilaya
+    def list(self, request, *args, **kwargs):
+        res = super().list(request, *args, **kwargs)
+        wilaya_id = request.GET.get('owned_by__wilaya')
+        if wilaya_id:
+            Wilaya.objects.filter(id=wilaya_id).update(clicks_count=F('clicks_count')+1)
+        return res
 
     def create(self, request, *args, **kwargs):
         print("create vehicle...")
