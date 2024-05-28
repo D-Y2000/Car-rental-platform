@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from api_agency.models import * 
+from api_agency.models import Agency, Branch 
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
@@ -47,8 +47,6 @@ class CanCreateBranches(permissions.BasePermission):
 
 class CanRudBranches(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # if request.method in permissions.SAFE_METHODS:
-        #     return True
         
         #only the agency owner of the current branch can edit or delete
         user=request.user
