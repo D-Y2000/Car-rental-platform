@@ -3,7 +3,6 @@ from rest_framework import serializers
 from api_agency.models import *
 from api_auth.serializers import UserSerializer
 from django.utils import timezone
-
 class AgencySerializer(serializers.ModelSerializer):
     user=UserSerializer()
     # access only the last subscription of the agency
@@ -93,7 +92,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 "created_at",
                 "end_at",
                 ]
-                
+                  
 class AgencyDetailSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
     
@@ -112,14 +111,15 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
         # get last subscription
         last_subscription = obj.my_subscriptions.order_by('-created_at').first()
         # check if last subscription is Pro plan and valid
+        is_pro=False
         if last_subscription:
             now = timezone.now()
-            return (
+            is_pro = (
                 last_subscription.plan.name == "Pro" and
                 last_subscription.end_at is not None and
                 last_subscription.end_at > now
             )
-        return False
+        return is_pro
     class Meta:
         model=Agency
         fields=["id",
@@ -139,7 +139,6 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "my_subscriptions",
                 "is_pro"
                 ]
-
 
 class RateSerializer(serializers.ModelSerializer):
     class Meta:
