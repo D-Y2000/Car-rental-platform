@@ -12,6 +12,7 @@ from api_main.permissions import IsDefault
 from api_agency.filters import VehcilePriceFilter
 from django.db.models import F
 from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan 
+from django.utils import timezone
 
 
 # Create your views here.
@@ -30,12 +31,60 @@ class Agencies(generics.ListCreateAPIView):
             return serializers.AgencySerializer
         else:
             return serializers.AgencyDetailSerializer
-
+            
 
 class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Agency.objects.all()
     serializer_class = serializers.AgencyDetailSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,permissions.IsAgencyOwnerOrReadOnly]
+
+    def get(self, request, *args, **kwargs):
+        agency = self.get_object()
+        print(f"Retrieved agency: {agency.id}")
+
+        # Check the agency's subscription
+        subscription = Subscription.objects.filter(agency=agency).first()
+        if subscription and subscription.end_at < timezone.now():
+            #unsubscribe agency
+            print("Subscription has expired, processing unsubscription")
+            self.handle_unsubscription(agency=agency)
+
+        serializer = self.get_serializer(agency)
+        return Response(serializer.data)
+
+    def handle_unsubscription(self, agency):
+        print(f" starting unsebscription")
+        agency_branches = Branch.objects.filter(agency=agency)
+        free_plan = Plan.objects.get(name='free')
+        unlocked_agency_branches=Branch.objects.filter(agency=agency)[:free_plan.max_branches]
+        print(free_plan)
+        if agency_branches.count() >= free_plan.max_branches:
+            branches_to_lock = Branch.objects.filter(agency=agency)[free_plan.max_branches:]
+            #lock all branches and vehicles relaetd to the branches to lock
+            print("locking branches")
+            for branch in branches_to_lock:
+                branch_vehicles = Vehicle.objects.filter(owned_by = branch)
+                print("locking branch  vehicles")
+                for vehicle in branch_vehicles:
+                    vehicle.is_locked = True
+                    vehicle.is_available = False
+                    vehicle.save()
+                print("locking branch")
+                branch.is_locked = True
+                branch.save()
+        #lock vehicles of unlocked branches
+        print("unlocked branches")
+        for branch in unlocked_agency_branches:
+            branch_vehicles = Vehicle.objects.filter(owned_by = branch)
+            if branch_vehicles.count() > free_plan.max_vehicles:
+                branch_vehicles_to_lock = branch_vehicles[free_plan.max_vehicles:]
+                print("locking unlocked branch  vehicles")
+                for vehicle in branch_vehicles_to_lock:
+                    vehicle.is_locked = True
+                    vehicle.is_available = False
+                    vehicle.save()
+            branch.is_locked = True
+            branch.save()
 
 
 @api_view(['GET'])
@@ -243,7 +292,7 @@ class AgencyVehicles(generics.ListAPIView):
     queryset=Vehicle.objects.all()
     def get_queryset(self):
         pk= self.kwargs['pk']
-        vehicles=Vehicle.objects.filter(owned_by__agency=pk,is_deleted=False)
+        vehicles=Vehicle.objects.filter(owned_by__agency=pk,is_deleted=False,is_locked=False)
         return vehicles
         
 #list the reservation of the logged  agency

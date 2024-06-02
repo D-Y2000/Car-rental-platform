@@ -118,8 +118,9 @@ class Branch(models.Model):
     address = models.CharField(max_length=255, blank=True)
     wilaya = models.ForeignKey(Wilaya,on_delete = models.CASCADE,null=True,blank=True)
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add = True)
+    updated_at = models.DateTimeField(auto_now = True)
+    is_locked = models.BooleanField(default = False)
 
     def __str__(self):
         return f"{self.name} - {self.agency.name}"
@@ -179,6 +180,7 @@ class Vehicle(models.Model):
     options = models.ManyToManyField(Option, blank=True)
     is_available=models.BooleanField(default=True)
     is_deleted=models.BooleanField(default=False)
+    is_locked = models.BooleanField(default=False)
     description = models.TextField(max_length=1000, help_text='Small description (1000)', null=True, blank=True)
 
     # *** Pricing ***
