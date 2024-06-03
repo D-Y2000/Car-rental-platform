@@ -275,10 +275,22 @@ class Reservation(models.Model):
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='postponed')
     total_days = models.PositiveSmallIntegerField(default=1)
-    total_price = models.DecimalField(max_digits=8, decimal_places=2,)
 
     start_date = models.DateField()
     end_date = models.DateField()
+
+    protection = models.BooleanField(default=False)
+    protection_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    # Archived vehicle pricing
+    vehicle_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    # vehicle price * total_days 
+    total_price_without_protection = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    # total_price_without_protection + protection price
+    total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
