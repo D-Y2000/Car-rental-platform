@@ -1,6 +1,7 @@
 from rest_framework import generics
 from api_main.serializers import *
-from api_main.models import *
+from api_main.models import Profile
+from api_agency.models import Reservation
 from rest_framework import permissions
 from api_main.permissions import *
 
