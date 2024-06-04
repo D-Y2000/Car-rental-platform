@@ -1,6 +1,7 @@
 from rest_framework import generics
 from api_main.serializers import *
-from api_main.models import *
+from api_main.models import Profile
+from api_agency.models import Reservation
 from rest_framework import permissions
 from api_main.permissions import *
 
@@ -50,17 +51,32 @@ class MyReservations(generics.ListCreateAPIView):
         vehicle = serializer_data.get('vehicle')
         branch = vehicle.owned_by
         agency = branch.agency
+        
         start_date = serializer_data['start_date']
         end_date = serializer_data['end_date']
-        total_days = (end_date-start_date).days
-        total_price = total_days * vehicle.price
+        
+        protection = serializer_data['protection']
+        protection_price = 4000
 
+        # archive vehicle price in case the price changes
+        vehicle_price = vehicle.price
+
+        total_days = (end_date - start_date).days
+        total_price_without_protection = total_days * vehicle_price
+
+        total_price = total_price_without_protection
+        if protection:
+            total_price += protection_price
+        
         # add calculated data to the serializer validated data
-        serializer.validated_data['total_days']=total_days
-        serializer.validated_data['total_price']=total_price
-        serializer.validated_data['client']=client
-        serializer.validated_data['branch']=branch
-        serializer.validated_data['agency']=agency
+        serializer.validated_data['client']= client
+        serializer.validated_data['branch']= branch
+        serializer.validated_data['agency']= agency
+        serializer.validated_data['vehicle_price']= vehicle_price
+        serializer.validated_data['total_days']= total_days
+        serializer.validated_data['protection_price']= protection_price
+        serializer.validated_data['total_price_without_protection']= total_price_without_protection
+        serializer.validated_data['total_price']= total_price
         return super().perform_create(serializer)
 
 # Display and edit (change date or vehicle or delete) a specific reservation for the logged in client if the reservation is postponed

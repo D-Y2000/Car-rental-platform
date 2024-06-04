@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from api_main.models import * 
+from api_main.models import Profile
 
 
 
