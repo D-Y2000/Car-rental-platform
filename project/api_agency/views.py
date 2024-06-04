@@ -43,7 +43,7 @@ class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
         print(f"Retrieved agency: {agency.id}")
 
         # Check the agency's subscription
-        subscription = Subscription.objects.filter(agency=agency).first()
+        subscription = Subscription.objects.filter(agency=agency).order_by('-created_at').first()
         if subscription and subscription.end_at < timezone.now():
             #unsubscribe agency
             print("Subscription has expired, processing unsubscription")
@@ -58,7 +58,7 @@ class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
         free_plan = Plan.objects.get(name='free')
         unlocked_agency_branches=Branch.objects.filter(agency=agency)[:free_plan.max_branches]
         print(free_plan)
-        if agency_branches.count() >= free_plan.max_branches:
+        if agency_branches.count() > free_plan.max_branches:
             branches_to_lock = Branch.objects.filter(agency=agency)[free_plan.max_branches:]
             #lock all branches and vehicles relaetd to the branches to lock
             print("locking branches")
@@ -83,8 +83,6 @@ class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
                     vehicle.is_locked = True
                     vehicle.is_available = False
                     vehicle.save()
-            branch.is_locked = True
-            branch.save()
 
 
 @api_view(['GET'])
@@ -119,7 +117,7 @@ class AgencySubscription(generics.ListCreateAPIView):
 class Branches(generics.ListCreateAPIView):
     queryset=Branch.objects.all()
     serializer_class=serializers.BranchSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly]
+    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly,permissions.CanCreateBranches]
 
     def get_serializer_class(self):
 
@@ -140,16 +138,16 @@ class BranchVehicles(generics.ListAPIView):
     permission_classes=[AllowAny]
     def get_queryset(self):
         pk= self.kwargs['pk']
-        vehicles=Vehicle.objects.filter(owned_by=pk,is_deleted=False)
+        vehicles=Vehicle.objects.filter(owned_by=pk,is_deleted=False,is_locked = False)
         return vehicles
 
 class AgencyBranches(generics.ListAPIView):
     serializer_class=serializers.BranchDetailsSerializer
-    permission_classes=[IsAuthenticatedOrReadOnly,permissions.CanCreateBranches]
+    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly]
 
     def get_queryset(self):
         pk= self.kwargs['pk']
-        branches=Branch.objects.filter(agency=pk)
+        branches=Branch.objects.filter(agency=pk,is_locked = False)
         return branches
     
 
@@ -190,7 +188,7 @@ def vehicles_models(request,pk):
 
 
 class ListVehicles(generics.ListCreateAPIView):
-    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly,permissions.IsBranchOwner]
+    permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly,permissions.IsBranchOwner,permissions.CanCreateVehicle]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
     filterset_class = VehcilePriceFilter
@@ -202,7 +200,7 @@ class ListVehicles(generics.ListCreateAPIView):
             return serializers.VehicleSerializer
 
     def  get_queryset(self):
-        vehicles=Vehicle.objects.filter(is_available=True,is_deleted=False)
+        vehicles=Vehicle.objects.filter(is_available = True,is_deleted = False, is_locked = False)
         min_price = self.request.GET.get('min_price')
         max_price = self.request.GET.get('max_price')
         if min_price :
@@ -223,19 +221,18 @@ class ListVehicles(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         print("create vehicle...")
         img = request.data.get('uploaded_images')
-        for i in img:
-            print("img", i.get('url'), i.get('order'))
+
         agency=Agency.objects.get(user=request.user)
         branches=Branch.objects.filter(agency=agency)
         branch_pk=request.data.get('owned_by')
         # search if the given branch is actually linked to the conneted agency
         try :
             branch=Branch.objects.get(pk=branch_pk)
-            if branch in branches:
+            if branch in branches and branch.is_locked == False:
                 # if True permission granted to create vehicle and assign it to the branch
                 return super().create(request, *args, **kwargs) 
             else:
-                return Response("you can't perfor this action",status=status.HTTP_400_BAD_REQUEST)    
+                return Response("you can't perform this action",status=status.HTTP_400_BAD_REQUEST)    
         except Branch.DoesNotExist:
             return Response("branch doesn't exist",status=status.HTTP_404_NOT_FOUND)
 
@@ -262,7 +259,7 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
         try :
             branch=Branch.objects.get(pk=branch_pk)
             print(f'branch: {branch}')
-            if branch in branches:
+            if branch in branches and branch.is_locked == False:
                 return super().update(request, *args, **kwargs)
             else:
                 return Response("you can't perform this action",status=status.HTTP_400_BAD_REQUEST)    
