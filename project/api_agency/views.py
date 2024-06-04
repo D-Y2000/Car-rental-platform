@@ -376,7 +376,7 @@ class AgencyRatings(generics.ListAPIView):
 def agencyOverview(request):
     user=request.user
     agency=Agency.objects.get(user=user)
-    serializer=serializers.Overviewserializers.AgencySerializer(agency)
+    serializer=serializers.OverviewAgencySerializer(agency)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -386,7 +386,7 @@ def branchOverview(request,pk):
     agency=Agency.objects.get(user=user)
     try:
         branch=Branch.objects.get(agency=agency,pk=pk)
-        serializer = serializers.Overviewserializers.BranchSerializer(branch)
+        serializer = serializers.OverviewBranchSerializer(branch)
         return Response(serializer.data,status=status.HTTP_200_OK)
     except Branch.DoesNotExist:
         raise serializers.ValidationError("Branch with ID {} does not exist".format(pk))
