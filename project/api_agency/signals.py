@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver, Signal
 from api_agency.models import Notification,Reservation,Rate,Subscription,Plan,Branch,Vehicle,Agency
 from django.db.models import Avg
-from django.utils import timezone
+
 
 @receiver(signal=post_save,sender=Reservation)
 def OrderNotification(sender,instance,created,**kwargs):
@@ -28,45 +28,6 @@ def calculate_agency_rate(sender,instance,created,**kwargs):
     agency.rate = average_rating
     agency.save()
 
-unsubscribe = Signal()
-
-@receiver(signal=unsubscribe,sender=Subscription)
-def unsubscribe_agency(sender,instance,created,**kwargs):
-    if not created and instance.end_at < timezone.now():
-        print(f" starting unsebscription")
-        agency = instance.agency
-        agency_branches = Branch.objects.filter(agency=agency)
-        free_plan = Plan.objects.get(name='free')
-        unlocked_agency_branches=Branch.objects.filter(agency=agency)[:free_plan.max_branches]
-        print(free_plan)
-        if agency_branches.count() >= free_plan.max_branches:
-            branches_to_lock = Branch.objects.filter(agency=agency)[free_plan.max_branches:]
-            #lock all branches and vehicles relaetd to the branches to lock
-            print("locking branches")
-            for branch in branches_to_lock:
-                branch_vehicles = Vehicle.objects.filter(owned_by = branch)
-                print("locking branch  vehicles")
-                for vehicle in branch_vehicles:
-                    vehicle.is_locked = True
-                    vehicle.is_available = False
-                    vehicle.save()
-                print("locking branch")
-                branch.is_locked = True
-                branch.save()
-        #lock vehicles of unlocked branches
-        print("unlocked branches")
-        for branch in unlocked_agency_branches:
-            branch_vehicles = Vehicle.objects.filter(owned_by = branch)
-            if branch_vehicles.count() > free_plan.max_vehicles:
-                branch_vehicles_to_lock = branch_vehicles[free_plan.max_vehicles:]
-                print("locking unlocked branch  vehicles")
-                for vehicle in branch_vehicles_to_lock:
-                    vehicle.is_locked = True
-                    vehicle.is_available = False
-                    vehicle.save()
-            branch.is_locked = True
-            branch.save()
-
 
 @receiver(signal=post_save,sender=Subscription)
 def subscribe_agency(sender,instance,created,**kwargs):
@@ -75,18 +36,28 @@ def subscribe_agency(sender,instance,created,**kwargs):
         agency=instance.agency
         agency_branches = Branch.objects.filter(agency=agency)
         free_plan = Plan.objects.get(name='free')
-        if agency_branches.count() >= free_plan.max_branches:
-            branches_to_unlock = Branch.objects.filter(agency=agency)[free_plan.max_branches:]
+        if agency_branches.count() > free_plan.max_branches:
+            branches_to_unlock = agency_branches[free_plan.max_branches:]
+            print("unlocking branches")
             for branch in branches_to_unlock:
                 branch_vehicles = Vehicle.objects.filter(owned_by = branch)
-                if branch_vehicles.count() >= free_plan.max_vehicles:
-                    branch_vehicles = branch_vehicles[free_plan.max_vehicles:]
-                    for vehicle in branch_vehicles:
-                        vehicle.is_locked = False
-                        vehicle.is_available = True
-                        vehicle.save()
+                print("unlocking vehicles")
+                for vehicle in branch_vehicles:
+                    vehicle.is_locked = False
+                    vehicle.is_available = True
+                    vehicle.save()
                 branch.is_locked = False
+                print("unlocked branch")
                 branch.save()
-    
+        unlocked_agency_branches=agency_branches[:free_plan.max_branches]
+        for branch in unlocked_agency_branches:
+            branch_vehicles = Vehicle.objects.filter(owned_by = branch)
+            if branch_vehicles.count() > free_plan.max_vehicles:
+                branch_vehicles_to_lock = branch_vehicles[free_plan.max_vehicles:]
+                print("unlocking unlocked branch  vehicles")
+                for vehicle in branch_vehicles_to_lock:
+                    vehicle.is_locked = False
+                    vehicle.is_available = True
+                    vehicle.save()
 
 

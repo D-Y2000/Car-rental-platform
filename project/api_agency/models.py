@@ -33,7 +33,7 @@ class Subscription(models.Model):
     
     # Note: end_at initialized for one month after created_at
     end_at = models.DateTimeField()
-
+    
     def save(self, *args, **kwargs):
         if not self.end_at:
             # Set end_at to one month after created_at
