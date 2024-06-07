@@ -1,11 +1,16 @@
 from django.forms import ValidationError
+from django.utils import timezone
+
 from rest_framework import serializers
+
 from api_agency.models import *
 from api_auth.serializers import UserSerializer
-from django.utils import timezone
+from payments.serializers import ListNewSubscriptionSerializer
+
 class AgencySerializer(serializers.ModelSerializer):
-    user=UserSerializer()
+    user = UserSerializer()
     # access only the last subscription of the agency
+    # Note: > this is old version of my_subscriptions
     my_subscriptions = serializers.SerializerMethodField()
     def get_my_subscriptions(self, obj):
         last_subscription = obj.my_subscriptions.order_by('-created_at').first()
@@ -13,21 +18,34 @@ class AgencySerializer(serializers.ModelSerializer):
             return SubscriptionSerializer(last_subscription).data
         return None
     
+    # Note: > this is the updated version of my_subscriptions is becoming my_new_subscriptions
+    # the serializer can be found in payments.serialisers
+    my_new_subscriptions = serializers.SerializerMethodField()
+    def get_my_new_subscriptions(self, obj):
+        last_subscription = obj.my_new_subscriptions.order_by('-created_at').first()
+        if last_subscription:
+            return ListNewSubscriptionSerializer(last_subscription).data
+        return None
+    
 
     # A boolean field to indecate if the agency is in pro plan
     is_pro = serializers.SerializerMethodField()
     def get_is_pro(self, obj):
         # get last subscription
-        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        last_subscription = obj.my_new_subscriptions.order_by('-created_at').first()
         # check if last subscription is Pro plan and valid
         if last_subscription:
             now = timezone.now()
+            # check if Pro and time valid and status paid
+            # the status is trigred by a webhook > check payments.views > webhook 
             return (
                 last_subscription.plan.name == "Pro" and
                 last_subscription.end_at is not None and
-                last_subscription.end_at > now
+                last_subscription.end_at > now and
+                last_subscription.status == "paid"
             )
         return False
+    
     class Meta:
         model=Agency
         fields=["id",
@@ -45,6 +63,7 @@ class AgencySerializer(serializers.ModelSerializer):
                 "rate",
                 "created_at",
                 "my_subscriptions",
+                "my_new_subscriptions",
                 "is_pro"
                 ]
 
@@ -80,8 +99,7 @@ class PlanSerializer(serializers.ModelSerializer):
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
     class Meta :
         model = Subscription
-        fields=['plan']
-        
+        fields=['plan']       
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan = PlanSerializer(read_only=True)
@@ -97,6 +115,7 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
     user=UserSerializer(read_only=True)
     
     # access only the last subscription of the agency
+    # Note: > this is old version of my_subscriptions
     my_subscriptions = serializers.SerializerMethodField()
     def get_my_subscriptions(self, obj):
         last_subscription = obj.my_subscriptions.order_by('-created_at').first()
@@ -104,22 +123,34 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
             return SubscriptionSerializer(last_subscription).data
         return None
     
+    # Note: > this is the updated version of my_subscriptions is becoming my_new_subscriptions
+    # the serializer can be found in payments.serialisers
+    my_new_subscriptions = serializers.SerializerMethodField()
+    def get_my_new_subscriptions(self, obj):
+        last_subscription = obj.my_new_subscriptions.order_by('-created_at').first()
+        if last_subscription:
+            return ListNewSubscriptionSerializer(last_subscription).data
+        return None
+    
 
     # A boolean field to indecate if the agency is in pro plan
     is_pro = serializers.SerializerMethodField()
     def get_is_pro(self, obj):
         # get last subscription
-        last_subscription = obj.my_subscriptions.order_by('-created_at').first()
+        last_subscription = obj.my_new_subscriptions.order_by('-created_at').first()
         # check if last subscription is Pro plan and valid
-        is_pro=False
         if last_subscription:
             now = timezone.now()
-            is_pro = (
+            # check if Pro and time valid and status paid
+            # the status is trigred by a webhook > check payments.views > webhook 
+            return (
                 last_subscription.plan.name == "Pro" and
                 last_subscription.end_at is not None and
-                last_subscription.end_at > now
+                last_subscription.end_at > now and
+                last_subscription.status == "paid"
             )
-        return is_pro
+        return False
+    
     class Meta:
         model=Agency
         fields=["id",
@@ -137,8 +168,10 @@ class AgencyDetailSerializer(serializers.ModelSerializer):
                 "rate",
                 "created_at",
                 "my_subscriptions",
+                "my_new_subscriptions",
                 "is_pro"
                 ]
+
 
 class RateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -155,12 +188,7 @@ class RateSerializer(serializers.ModelSerializer):
             return super().create(validated_data)
         except Agency.DoesNotExist:
             raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
-        
-
-
-        
-        
-    
+          
 class RateDetailsSerializer(serializers.ModelSerializer):
     # agency = AgencyDetailSerializer(many=False,read_only=True,)
     agency= serializers.SlugRelatedField(slug_field='name',read_only=True)
@@ -170,13 +198,9 @@ class RateDetailsSerializer(serializers.ModelSerializer):
         model = Rate
         fields = "__all__"
 
-
-
 class LocationSerializer(serializers.Serializer):
     lat = serializers.DecimalField(max_digits=50, decimal_places=30)
     lng = serializers.DecimalField(max_digits=50, decimal_places=30)
-
-
 
 class WilayaSerializer(serializers.ModelSerializer):
     class Meta :
@@ -217,7 +241,6 @@ class BranchSerializer(serializers.ModelSerializer):
 
         instance.save()
         return super().update(instance, validated_data)
-    
         
 class BranchDetailsSerializer(serializers.ModelSerializer):
     agency=AgencySerializer(read_only=True)
@@ -284,9 +307,6 @@ class VehicleSerializer(serializers.ModelSerializer):
 
         return super().update(instance, validated_data)
 
-
-
-
 class MakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Make
@@ -296,7 +316,6 @@ class ModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Model
         fields="__all__"
-
 
 class TypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -318,8 +337,6 @@ class TransmissionSerializer(serializers.ModelSerializer):
         model = Transmission
         fields=['id','name']
 
-
-
 class VehicleDetailsSerializer(serializers.ModelSerializer):
     make=MakeSerializer()
     model=ModelSerializer()
@@ -333,13 +350,9 @@ class VehicleDetailsSerializer(serializers.ModelSerializer):
         model=Vehicle
         fields="__all__"
 
-
-
-
 from api_main.serializers import ProfileDetailsSerializer
 
 # Reservation serializer that allows the agencies to display thier reservations and can only accept or decline 
-
 class AgencyReservationDetailsSerializer(serializers.ModelSerializer):
     agency=AgencyDetailSerializer(read_only=True)
     branch=BranchDetailsSerializer(read_only=True)
@@ -371,8 +384,8 @@ class OverviewAgencySerializer(serializers.ModelSerializer):
         model=Agency
         fields="__all__"
 
-
 class NotifcationSerializer(serializers.ModelSerializer):
     class Meta :
         model = Notification
         fields = ["id","message","reservation","timestamp","is_read"]
+

@@ -26,6 +26,31 @@ class Plan(models.Model):
     def __str__(self) -> str:
         return self.name
 
+class NewSubscription(models.Model):
+    # link to the payment checkout
+    checkout_id = models.CharField(max_length=255, unique=True)
+    # status: pending, paid, failed
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    )
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES ,default='pending')
+    # plan: Free or Pro
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    # User who subscribed
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE, related_name='my_new_subscriptions')
+    # *** Dates ***
+    created_at = models.DateTimeField(auto_now_add=True)    
+    # Note: end_at initialized for one month after created_at
+    end_at = models.DateTimeField()
+    
+    def save(self, *args, **kwargs):
+        if not self.end_at:
+            # Set end_at to one month after created_at
+            self.end_at = datetime.now() + relativedelta(months=1)
+        super().save(*args, **kwargs)
+
 class Subscription(models.Model):
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
     agency = models.ForeignKey('Agency', on_delete=models.CASCADE, related_name='my_subscriptions')

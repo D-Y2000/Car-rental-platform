@@ -1,25 +1,22 @@
+from django.utils import timezone
+from django.db.models import F
 
 from rest_framework.decorators import api_view,permission_classes
-from api_agency import serializers
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from api_agency import permissions
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
-from rest_framework import generics
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-from api_main.permissions import IsDefault
+from django_filters.rest_framework import DjangoFilterBackend
+
+from api_agency import serializers
+from api_agency import permissions
 from api_agency.filters import VehcilePriceFilter
-from django.db.models import F
 from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan 
-from django.utils import timezone
+from api_main.permissions import IsDefault
 
 
-# Create your views here.
-
-
-#--------------Agencies-------------#
-
+#--------------Agencies-------------
 class Agencies(generics.ListCreateAPIView):
 
     queryset = Agency.objects.all()
@@ -31,8 +28,7 @@ class Agencies(generics.ListCreateAPIView):
             return serializers.AgencySerializer
         else:
             return serializers.AgencyDetailSerializer
-            
-
+    
 class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Agency.objects.all()
     serializer_class = serializers.AgencyDetailSerializer
@@ -84,7 +80,6 @@ class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
                     vehicle.is_available = False
                     vehicle.save()
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,permissions.IsAgency])
 def agencyProfile(request):
@@ -109,11 +104,8 @@ class AgencySubscription(generics.ListCreateAPIView):
         agency = Agency.objects.get(user=user)
         serializer.validated_data['agency'] = agency
         return super().perform_create(serializer)
-    
-
 
 #------------------Branches-------------#
-
 class Branches(generics.ListCreateAPIView):
     queryset=Branch.objects.all()
     serializer_class=serializers.BranchSerializer
@@ -126,12 +118,10 @@ class Branches(generics.ListCreateAPIView):
         elif self.request.method == 'POST':
             return serializers.BranchSerializer
 
-
 class BranchDetails(generics.RetrieveAPIView):
     queryset=Branch.objects.all()
     serializer_class=serializers.BranchDetailsSerializer
     permission_classes=[AllowAny]
-
 
 class BranchVehicles(generics.ListAPIView):
     serializer_class=serializers.VehicleDetailsSerializer
@@ -150,7 +140,6 @@ class AgencyBranches(generics.ListAPIView):
         branches=Branch.objects.filter(agency=pk,is_locked = False)
         return branches
     
-
 class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanRudBranches]
     queryset=Branch.objects.all()
@@ -162,10 +151,6 @@ class AgencyBranchesDetails(generics.RetrieveUpdateDestroyAPIView):
         else:
             return serializers.BranchSerializer
 
-
-
-
-
 #----------------------------VEHICLES-------------------#
 #LIST vehicles and models 
 @api_view(['GET'])
@@ -175,7 +160,6 @@ def vehicles_makes(request):
 
     return Response(serializer.data,status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 def vehicles_models(request,pk):
     models=Model.objects.filter(make_id=pk)
@@ -183,10 +167,7 @@ def vehicles_models(request,pk):
 
     return Response(serializer.data,status=status.HTTP_200_OK)
 
-
 #VEHICLES MANAGEMENT FOR AGENCIES
-
-
 class ListVehicles(generics.ListCreateAPIView):
     permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly,permissions.IsBranchOwner,permissions.CanCreateVehicle]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
@@ -273,15 +254,11 @@ class VehicleDetails(generics.RetrieveUpdateDestroyAPIView):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-
 
 class VehicleImageDelete(generics.DestroyAPIView):
     queryset=VehicleImage.objects.all()
     serializer_class=serializers.VehicleImageSerializer
     permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanDestroyVehicleImage]
-    
-
 
 class AgencyVehicles(generics.ListAPIView):
     serializer_class=serializers.VehicleDetailsSerializer
@@ -312,8 +289,6 @@ class ReservationDetails(generics.RetrieveAPIView):
     permission_classes=[IsAuthenticated,permissions.IsAgency,permissions.CanRudReservation]
     queryset=Reservation.objects.all()
 
-
-
 class AcceptReservation(generics.UpdateAPIView):
     queryset = Reservation.objects.all()
     serializer_class = serializers.AgencyReservationDetailsSerializer
@@ -334,7 +309,6 @@ class AcceptReservation(generics.UpdateAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class RefuseReservation(generics.UpdateAPIView):
     queryset = Reservation.objects.all()
     serializer_class = serializers.AgencyReservationDetailsSerializer
@@ -350,14 +324,11 @@ class RefuseReservation(generics.UpdateAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
 # Agency Rate
-
 class RateAgency(generics.CreateAPIView):
     serializer_class = serializers.RateSerializer
     queryset = Rate.objects.all()
     permission_classes= [IsAuthenticated,IsDefault,]
-
 
 class AgencyRatings(generics.ListAPIView):
     serializer_class = serializers.RateDetailsSerializer
@@ -391,7 +362,6 @@ def branchOverview(request,pk):
     except Branch.DoesNotExist:
         raise serializers.ValidationError("Branch with ID {} does not exist".format(pk))
 
-
 @api_view(['GET'])
 def get_details(request):
     data={
@@ -402,7 +372,6 @@ def get_details(request):
     }
 
     return Response(data=data,status=status.HTTP_200_OK)
-
 
 @api_view(['GET'])
 def get_wilayas(request):
@@ -416,3 +385,46 @@ def get_plans(request):
     plan = Plan.objects.all()
     serializer = serializers.PlanSerializer(plan, many=True)
     return Response(data = serializer.data, status = status.HTTP_200_OK)
+
+# CHARGILY pay webhook
+# This webhook will be called by chargily after a successful payment
+
+# when a customer (Agency) successfully pays for an pro billing,
+# chargily inform the server to change the agency plan to pro plan 
+
+# Chargily Pay Secret key, will be used to calculate the Signature
+# api_secret_key = settings.CHARGILY_SECRET_KEY
+
+# @csrf_exempt
+# @require_POST
+# def webhook(request):
+#     # Extracting the 'signature' header from the HTTP request
+#     signature = request.headers.get('signature')
+
+#     # Getting the raw payload from the request body
+#     payload = request.body.decode('utf-8')
+
+#     # If there is no signature, ignore the request
+#     if not signature:
+#         return HttpResponse(status=400)
+
+#     # Calculate the signature
+#     computed_signature = hmac.new(api_secret_key.encode('utf-8'), payload.encode('utf-8'), hashlib.sha256).hexdigest()
+
+#     # If the calculated signature doesn't match the received signature, ignore the request
+#     if not hmac.compare_digest(signature, computed_signature):
+#         return HttpResponse(status=403)
+
+#     # If the signatures match, proceed to decode the JSON payload
+#     event = json.loads(payload)
+
+#     # Switch based on the event type
+#     if event['type'] == 'checkout.paid':
+#         checkout = event['data']
+#         # Handle the successful payment.
+#     elif event['type'] == 'checkout.failed':
+#         checkout = event['data']
+#         # Handle the failed payment.
+
+#     # Respond with a 200 OK status code to let us know that you've received the webhook
+#     return JsonResponse({}, status=200)
