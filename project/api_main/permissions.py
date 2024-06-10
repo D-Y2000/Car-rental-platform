@@ -9,7 +9,13 @@ class IsDefault(permissions.BasePermission):
         
         return user.role == 'default'
     
-
+class IsDefaultOrReadOly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        user=request.user
+        
+        return user.role == 'default'
 class IsProfileOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
@@ -35,3 +41,8 @@ class CandDeleteReservation(permissions.BasePermission):
             return True
         return obj.status == 'postponed'
         
+
+class CanEditFeedback(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        return obj.user == user

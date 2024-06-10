@@ -42,6 +42,11 @@ urlpatterns = [
     #Accepts POST request and create a rate for the agency with the given pk.
     path('agencies/<int:pk>/ratings/',views.AgencyRatings.as_view()),
     #Acceptes GET request and returns the ratings of the agency with the given pk.
+    #Agency Feedbacks
+    path('agencies/<int:pk>/feedbacks/',views.FeedbackListCreate.as_view()),
+    #Accepts POST request and create a feedback for the agency with the given pk.
+    path('agencies/feedback/<int:pk>/',views.FeedbackDetails.as_view()),
+    #Acceptes GET,PUT,PATCH and DELETE requests and returns the feedback the given pk.
     path('agency/subscribe/',views.AgencySubscription.as_view()),
     #Branches
     path('branches/',views.Branches.as_view()),
@@ -65,5 +70,12 @@ urlpatterns = [
      
     # get Plans
     path('plans/',views.get_plans),
+
+    #reports
+    path('agencies/<int:pk>/report/',views.ReportAgency.as_view()),
+    #Accepts POST request to report the agency with the given pk.
+
+    path('reports/',views.ReportList.as_view())
+
 
 ]
