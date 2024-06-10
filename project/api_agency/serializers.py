@@ -389,3 +389,46 @@ class NotifcationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ["id","message","reservation","timestamp","is_read"]
 
+
+class CreateFeedbackSerializer(serializers.ModelSerializer):
+    class Meta : 
+        model = Feedback
+        fields = ["comment"]
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        agency_pk = self.context['view'].kwargs.get('pk')
+        try:
+            agency=Agency.objects.get(pk=agency_pk)
+            validated_data['user']=user
+            validated_data['agency']=agency
+            return super().create(validated_data)
+        except Agency.DoesNotExist:
+            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only = True)
+    class Meta : 
+        model = Feedback
+        fields = "__all__"
+
+class CreateReportSerializer(serializers.ModelSerializer):
+    class Meta : 
+        model = Report
+        fields = ["issue"]
+    def create(self, validated_data):
+        user = self.context['request'].user
+        agency_pk = self.context['view'].kwargs.get('pk')
+        try:
+            agency=Agency.objects.get(pk=agency_pk)
+            validated_data['user']=user
+            validated_data['agency']=agency
+            return super().create(validated_data)
+        except Agency.DoesNotExist:
+            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta : 
+        model = Report
+        fields = "__all__"

@@ -12,8 +12,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api_agency import serializers
 from api_agency import permissions
 from api_agency.filters import VehcilePriceFilter
-from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan 
-from api_main.permissions import IsDefault
+from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan, Feedback, Report
+from api_main.permissions import IsDefault,IsDefaultOrReadOly,CanEditFeedback
 
 
 #--------------Agencies-------------
@@ -428,3 +428,46 @@ def get_plans(request):
 
 #     # Respond with a 200 OK status code to let us know that you've received the webhook
 #     return JsonResponse({}, status=200)
+
+
+
+class FeedbackListCreate(generics.ListCreateAPIView):
+    serializer_class = serializers.FeedbackSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly,IsDefaultOrReadOly]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return serializers.CreateFeedbackSerializer
+        else:
+            return serializers.FeedbackSerializer
+    def get_queryset(self):
+        try :
+            agency_pk=self.kwargs["pk"]
+            agency=Agency.objects.get(pk=agency_pk)
+            feedbacks=Feedback.objects.filter(agency=agency)
+            return feedbacks
+        except Agency.DoesNotExist:
+            raise serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
+
+class FeedbackDetails(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = serializers.FeedbackSerializer
+    queryset = Feedback.objects.all()
+    permission_classes = [IsAuthenticated,IsDefault,CanEditFeedback]
+
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT","PATCH"] :
+            return serializers.CreateFeedbackSerializer
+        else:
+            return serializers.FeedbackSerializer
+    
+class ReportAgency(generics.CreateAPIView):
+    serializer_class = serializers.CreateReportSerializer
+    queryset = Report.objects.all()
+    permission_classes = [IsAuthenticated,IsDefault]
+
+
+class ReportList(generics.ListAPIView):
+    serializer_class = serializers.ReportSerializer
+    queryset = Report.objects.all()
+    permission_classes = [IsAuthenticated,]

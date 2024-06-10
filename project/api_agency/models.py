@@ -335,3 +335,27 @@ class Notification(models.Model):
     
     class Meta:
         ordering=['-timestamp']
+
+
+    
+class Feedback(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"Feedback from {self.user} for {self.agency}"
+    
+
+
+class Report(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    agency = models.ForeignKey(Agency,on_delete=models.CASCADE)
+    issue = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"Report from {self.user} for {self.agency}"
