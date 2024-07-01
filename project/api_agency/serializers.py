@@ -189,7 +189,7 @@ class RateSerializer(serializers.ModelSerializer):
             validated_data['agency']=agency
             return super().create(validated_data)
         except Agency.DoesNotExist:
-            raise serializers.serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
+            raise serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
         
 class RateDetailsSerializer(serializers.ModelSerializer):
     # agency = AgencyDetailSerializer(many=False,read_only=True,)
