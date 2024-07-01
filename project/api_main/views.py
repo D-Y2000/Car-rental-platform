@@ -55,7 +55,7 @@ class MyReservations(generics.ListCreateAPIView):
         start_date = serializer_data['start_date']
         end_date = serializer_data['end_date']
         
-        protection = serializer_data['protection']
+        protection = serializer_data.get('protection')
         protection_price = 4000
 
         # archive vehicle price in case the price changes

@@ -2,6 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver, Signal
 from api_agency.models import Notification,Reservation,Rate,Subscription,Plan,Branch,Vehicle,Agency
 from django.db.models import Avg
+from django.core.mail import send_mail,EmailMessage
 
 
 @receiver(signal=post_save,sender=Reservation)
@@ -10,13 +11,24 @@ def OrderNotification(sender,instance,created,**kwargs):
         user = instance.branch.agency.user
         message = 'A new order is made'
         reservation = instance
+    #     email = EmailMessage(
+    #     subject='Reservation - info',
+    #     body=f"A new order has been made for the vehicle",
+    #     to=[user.email],
+    # )
         
     else :
         user = instance.client.user
         message = 'Your order has been processed.'
         reservation = instance
+        email = EmailMessage(
+        subject='Reservation - info',
+        body=f"Your order for the vehicle has been {instance.status}",
+        to=[user.email],
+    )
+        email.send()
     notification = Notification.objects.create(user=user,message=message,reservation = reservation)
-
+    
 
 @receiver(signal=post_save,sender=Rate)
 def calculate_agency_rate(sender,instance,created,**kwargs):
