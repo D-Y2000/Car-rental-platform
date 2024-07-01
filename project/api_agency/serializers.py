@@ -183,12 +183,14 @@ class RateSerializer(serializers.ModelSerializer):
         agency_pk = self.context['view'].kwargs.get('pk')
         try:
             agency=Agency.objects.get(pk=agency_pk)
+            if Rate.objects.filter(user=user, agency=agency).exists():
+                raise serializers.ValidationError("You have already rated this agency.")
             validated_data['user']=user
             validated_data['agency']=agency
             return super().create(validated_data)
         except Agency.DoesNotExist:
-            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
-          
+            raise serializers.serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
+        
 class RateDetailsSerializer(serializers.ModelSerializer):
     # agency = AgencyDetailSerializer(many=False,read_only=True,)
     agency= serializers.SlugRelatedField(slug_field='name',read_only=True)
@@ -404,7 +406,7 @@ class CreateFeedbackSerializer(serializers.ModelSerializer):
             validated_data['agency']=agency
             return super().create(validated_data)
         except Agency.DoesNotExist:
-            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+            raise serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
 
 class FeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only = True)
@@ -425,7 +427,7 @@ class CreateReportSerializer(serializers.ModelSerializer):
             validated_data['agency']=agency
             return super().create(validated_data)
         except Agency.DoesNotExist:
-            raise ValidationError("Agency with ID {} does not exist".format(agency_pk))
+            raise serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
 
 
 class ReportSerializer(serializers.ModelSerializer):
