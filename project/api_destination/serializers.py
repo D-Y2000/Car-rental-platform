@@ -80,7 +80,7 @@ class RateSerializer(serializers.ModelSerializer):
         destination_pk = self.context['view'].kwargs.get('pk')
         try:
             destination=Destination.objects.get(pk=destination_pk)
-            if Rate.objects.filter(user=user, Destination=destination).exists():
+            if Rate.objects.filter(user=user, destination=destination).exists():
                 raise serializers.ValidationError("You have already rated this Destination.")
             validated_data['user']=user
             validated_data['destination']=destination
