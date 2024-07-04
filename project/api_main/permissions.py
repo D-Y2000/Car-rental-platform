@@ -16,6 +16,9 @@ class IsDefaultOrReadOly(permissions.BasePermission):
         user=request.user
         
         return user.role == 'default'
+    
+
+    
 class IsProfileOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
