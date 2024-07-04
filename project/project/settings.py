@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'api_main.apps.ApiMainConfig',
     'api_auth.apps.ApiAuthConfig',
     'payments.apps.PaymentsConfig',
+    'api_destination.apps.ApiDestinationConfig',
 ]
 
 REST_FRAMEWORK = {
