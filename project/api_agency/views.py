@@ -14,7 +14,7 @@ from api_agency import permissions
 from api_agency.filters import VehcilePriceFilter
 from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan, Feedback, Report
 from api_main.permissions import IsDefault,IsDefaultOrReadOly,CanEditFeedback
-
+from geopy.distance import geodesic
 
 #--------------Agencies-------------
 class Agencies(generics.ListCreateAPIView):
@@ -268,7 +268,30 @@ class AgencyVehicles(generics.ListAPIView):
         pk= self.kwargs['pk']
         vehicles=Vehicle.objects.filter(owned_by__agency=pk,is_deleted=False,is_locked=False)
         return vehicles
-        
+    
+
+
+class NearbyVehicles(generics.ListAPIView):
+    serializer_class = serializers.VehicleDetailsSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        lat = self.request.GET.get('lat')
+        long = self.request.GET.get('long')
+        raduis = self.request.GET.get('raduis')
+        user_location = lat,long
+        vehicles = Vehicle.objects.all()
+        nearby_vehicles = []
+        for vehicle in vehicles:
+            vehicle_location = vehicle.owned_by.latitude,vehicle.owned_by.longitude
+            #calculate the distance between the user location and the vehicle location 
+            distance = geodesic(user_location,vehicle_location).km
+            if distance <= float(raduis) : 
+                #if distance is smaller than the given raduis we add the vehicle to the list
+                nearby_vehicles.append(vehicle)
+        return nearby_vehicles
+
+#--------------Agency Reservatoins---------------------------
 #list the reservation of the logged  agency
 class ReservationList(generics.ListAPIView):
     serializer_class=serializers.AgencyReservationDetailsSerializer
@@ -430,6 +453,8 @@ def get_plans(request):
 #     return JsonResponse({}, status=200)
 
 
+
+#Feedbacks and Reports
 
 class FeedbackListCreate(generics.ListCreateAPIView):
     serializer_class = serializers.FeedbackSerializer

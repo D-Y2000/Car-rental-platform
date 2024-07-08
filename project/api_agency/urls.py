@@ -56,6 +56,8 @@ urlpatterns = [
 
     path('vehicles/',views.ListVehicles.as_view()),
     #Accepts GET,POST requests and creates a new vehicle or list all existing vehicles ,search and filter.
+    path('nearby_vehicles/',views.NearbyVehicles.as_view()),
+    #Accepts GET, and the parametres lat,long for user position and the raduis
     path('vehicles/<int:pk>/',views.VehicleDetails.as_view()),
      #This endpoint accepts GET,PUT,PATCH and DELETE requests to retreive,update and destroy vehicle with the given pk.
 
@@ -76,6 +78,8 @@ urlpatterns = [
     #Accepts POST request to report the agency with the given pk.
 
     path('reports/',views.ReportList.as_view())
+
+
 
 
 ]
