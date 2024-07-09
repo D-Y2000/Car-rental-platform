@@ -122,4 +122,4 @@ class IsPro(permissions.BasePermission):
         user = request.user
         agency = Agency.objects.get(user = user)
         return agency.mys_subscriptions.first().plan == 'Pro'
-        
+    

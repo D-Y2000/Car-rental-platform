@@ -13,7 +13,7 @@ from api_agency import serializers
 from api_agency import permissions
 from api_agency.filters import VehcilePriceFilter
 from api_agency.models import Agency, Branch, Vehicle, VehicleImage, Reservation, Rate, Subscription, Make, Model, Type, Energy, Transmission, Option, Wilaya, Plan, Feedback, Report
-from api_main.permissions import IsDefault,IsDefaultOrReadOly,CanEditFeedback
+from api_main.permissions import IsDefault,IsDefaultOrReadOly,CanEditFeedback,CanRateAndFeedback
 from geopy.distance import geodesic
 
 #--------------Agencies-------------
@@ -351,7 +351,7 @@ class RefuseReservation(generics.UpdateAPIView):
 class RateAgency(generics.CreateAPIView):
     serializer_class = serializers.RateSerializer
     queryset = Rate.objects.all()
-    permission_classes= [IsAuthenticated,IsDefault,]
+    permission_classes= [IsAuthenticated,IsDefault,CanRateAndFeedback]
 
 class AgencyRatings(generics.ListAPIView):
     serializer_class = serializers.RateDetailsSerializer
@@ -458,7 +458,7 @@ def get_plans(request):
 
 class FeedbackListCreate(generics.ListCreateAPIView):
     serializer_class = serializers.FeedbackSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly,IsDefaultOrReadOly]
+    permission_classes = [IsAuthenticatedOrReadOnly,IsDefaultOrReadOly,CanRateAndFeedback]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -489,7 +489,7 @@ class FeedbackDetails(generics.RetrieveUpdateDestroyAPIView):
 class ReportAgency(generics.CreateAPIView):
     serializer_class = serializers.CreateReportSerializer
     queryset = Report.objects.all()
-    permission_classes = [IsAuthenticated,IsDefault]
+    permission_classes = [IsAuthenticated,IsDefault,CanRateAndFeedback]
 
 
 class ReportList(generics.ListAPIView):
