@@ -183,6 +183,9 @@ class RateSerializer(serializers.ModelSerializer):
         agency_pk = self.context['view'].kwargs.get('pk')
         try:
             agency=Agency.objects.get(pk=agency_pk)
+            reservations = Reservation.objects.filter(client__user = user, agency = agency)
+            if  not reservations:
+                raise serializers.ValidationError("You are not a client for this agency.")
             if Rate.objects.filter(user=user, agency=agency).exists():
                 raise serializers.ValidationError("You have already rated this agency.")
             validated_data['user']=user
