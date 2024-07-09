@@ -1,5 +1,6 @@
 from rest_framework import permissions
 from api_main.models import Profile
+from api_agency.models import Agency,Reservation
 
 
 
@@ -43,8 +44,7 @@ class CandDeleteReservation(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.status == 'postponed'
-        
-
+    
 class CanEditFeedback(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
