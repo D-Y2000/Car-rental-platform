@@ -181,7 +181,7 @@ class ListVehicles(generics.ListCreateAPIView):
             return serializers.VehicleSerializer
 
     def  get_queryset(self):
-        vehicles=Vehicle.objects.filter(is_available = True,is_deleted = False, is_locked = False)
+        vehicles=Vehicle.objects.filter(is_available = True,is_deleted = False, is_locked = False).order_by('-owned_by__agency__rate')
         min_price = self.request.GET.get('min_price')
         max_price = self.request.GET.get('max_price')
         reason = self.request.GET.get('reason')
