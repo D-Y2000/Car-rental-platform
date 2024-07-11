@@ -291,12 +291,21 @@ class Reservation(models.Model):
         ('refused', 'Refused'),
         ('postponed', 'Postponed'),
     )
+
+    REASON_CHOICES =(
+        ('regular travel','Regular travel'),
+        ('business','Business'),
+        ('vacations','Vacations'),
+        ('special event','Special event'),
+        ('road trip','Road trip'),
+    )
     
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE,related_name="my_reservations",null=True,blank=True)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE,related_name="reservations",null=True,blank=True)
 
     vehicle = models.ForeignKey(Vehicle, on_delete = models.CASCADE)
     client = models.ForeignKey(Profile, on_delete = models.CASCADE)
+    reason = models.CharField(max_length=50, choices=REASON_CHOICES, default='regular travel')
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='postponed')
     total_days = models.PositiveSmallIntegerField(default=1)
