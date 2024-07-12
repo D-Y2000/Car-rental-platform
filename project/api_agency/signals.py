@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver, Signal
-from api_agency.models import Notification,Reservation,Rate,Subscription,Plan,Branch,Vehicle,Agency
+from api_agency.models import Notification,Reservation,Rate,Subscription,Plan,Branch,Vehicle,Agency,NewSubscription
 from django.db.models import Avg
 from django.core.mail import send_mail,EmailMessage
 
@@ -17,7 +17,7 @@ def OrderNotification(sender,instance,created,**kwargs):
     #     to=[user.email],
     # )
         
-    else :
+    elif instance.status != 'postponed' :
         user = instance.client.user
         message = 'Your order has been processed.'
         reservation = instance
@@ -41,7 +41,7 @@ def calculate_agency_rate(sender,instance,created,**kwargs):
     agency.save()
 
 
-@receiver(signal=post_save,sender=Subscription)
+@receiver(signal=post_save,sender=NewSubscription)
 def subscribe_agency(sender,instance,created,**kwargs):
     subscription = instance
     if  created:

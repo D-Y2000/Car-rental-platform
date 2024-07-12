@@ -44,7 +44,7 @@ class CanCreateBranches(permissions.BasePermission):
         #only agency can add vehicle
         user=request.user
         agency  = Agency.objects.get(user=user)
-        subscription = agency.my_subscriptions.order_by('-created_at').first()
+        subscription = agency.my_new_subscriptions.order_by('-created_at').first()
         if subscription and subscription.end_at > timezone.now():
             return True
         else:
@@ -85,7 +85,7 @@ class CanCreateVehicle(permissions.BasePermission):
             user=request.user
             agency  = Agency.objects.get(user=user)
             branch = Branch.objects.get(pk=request.data.get('owned_by'))
-            subscription = agency.my_subscriptions.order_by('-created_at').first()
+            subscription = agency.my_new_subscriptions.order_by('-created_at').first()
             if subscription and subscription.end_at > timezone.now():
                 return True
             else:
