@@ -180,46 +180,28 @@ class ListVehicles(generics.ListCreateAPIView):
         elif self.request.method=='POST':
             return serializers.VehicleSerializer
 
+
     def  get_queryset(self):
         vehicles=Vehicle.objects.filter(is_available = True,is_deleted = False, is_locked = False).order_by('-owned_by__agency__rate')
         min_price = self.request.GET.get('min_price')
         max_price = self.request.GET.get('max_price')
-        reason = self.request.GET.get('reason')
-        #get the existing reservations with the same reason that was given.
         if min_price :
             vehicles = vehicles.filter(price__gte=min_price)
         if max_price :
             vehicles = vehicles.filter(price__lte=max_price)
-
-        if reason:
-            reservations = Reservation.objects.filter(reason = reason)
-            recommended_vehicles = []
-            for r in reservations:
-                if r.vehicle in vehicles:
-                    recommended_vehicles.append(r.vehicle)
-            return vehicles,recommended_vehicles
         return vehicles
     
 
     # increment the clicks_count of the wilaya each time you list vehicles in a certain wilaya
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        res = super().list(request, *args, **kwargs)
         wilaya_id = request.GET.get('owned_by__wilaya')
         if wilaya_id:
             Wilaya.objects.filter(id=wilaya_id).update(clicks_count=F('clicks_count')+1)
-        if isinstance(queryset, tuple):
-            vehicles, recommended_vehicles = queryset
-        else:
-            vehicles = queryset
-            recommended_vehicles = []
+        return res
+    
 
-        vehicles_serializer = self.get_serializer(vehicles, many=True)
-        recommended_vehicles_serializer = self.get_serializer(recommended_vehicles, many=True)
 
-        return Response({
-            "vehicles": vehicles_serializer.data,
-            "recommended_vehicles": recommended_vehicles_serializer.data
-        })
 
     def create(self, request, *args, **kwargs):
         print("create vehicle...")
