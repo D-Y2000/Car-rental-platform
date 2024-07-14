@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from api_main.permissions import IsDefaultOrReadOly,IsDefault
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 
 # Create your views here.
 
@@ -33,7 +34,7 @@ class DestinationDetails(generics.RetrieveUpdateDestroyAPIView):
 
 class RateDestination(generics.CreateAPIView):
     serializer_class = RateSerializer
-    queryset = Rate.objects.all()
+    queryset = DestinationRate.objects.all()
     permission_classes= [permissions.IsAuthenticated,IsDefault,]
 
 class DestinationsRatings(generics.ListAPIView):
@@ -43,7 +44,37 @@ class DestinationsRatings(generics.ListAPIView):
         try :
             destination_pk=self.kwargs["pk"]
             destination=Destination.objects.get(pk=destination_pk)
-            ratings=Rate.objects.filter(destination=destination)
+            ratings=DestinationRate.objects.filter(destination=destination)
             return ratings
         except Destination.DoesNotExist:
             raise serializers.ValidationError("Destination with ID {} does not exist".format(destination_pk))
+
+
+class FeedbackListCreate(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly,IsDefaultOrReadOly]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateFeedbackSerializer
+        else:
+            return FeedbackSerializer
+    def get_queryset(self):
+        try :
+            destination_pk=self.kwargs["pk"]
+            destination=Destination.objects.get(pk=destination_pk)
+            feedbacks=DestinationFeedback.objects.filter(destination=destination)
+            return feedbacks
+        except Destination.DoesNotExist:
+            raise serializers.ValidationError("Destination with ID {} does not exist".format(destination_pk))
+
+class FeedbackDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = DestinationFeedback.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly,IsDefaultOrReadOly,CanEditRateFeedback]
+
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT","PATCH"] :
+            return CreateFeedbackSerializer
+        else:
+            return FeedbackSerializer
+    
