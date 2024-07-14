@@ -4,4 +4,5 @@ from api_destination.models import *
 
 
 admin.site.register(Destination)
-admin.site.register(Rate)
+admin.site.register(DestinationRate)
+admin.site.register(DestinationFeedback)

@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class IsDestinationOwner(permissions.BasePermission):
+class IsActivityOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         

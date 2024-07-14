@@ -10,7 +10,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Destination (models.Model):
-    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='destinations')
     name = models.CharField(max_length=50)
     description = models.TextField()
     latitude = models.DecimalField(max_digits=50, decimal_places=30, null=True, blank=True)
@@ -29,7 +29,18 @@ class DestinationImage(models.Model):
     class Meta:
         ordering = ['order']
 
-class Rate(models.Model):
+class DestinationRate(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='destinations_ratings')
     destination = models.ForeignKey(Destination,on_delete=models.CASCADE,related_name="destination_ratings")
     rate  = models.FloatField(validators=[MinValueValidator(1.0), MaxValueValidator(5.0)], default=1.0)
+
+
+class DestinationFeedback(models.Model):
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='destinations_feedbacks')
+    destination = models.ForeignKey(Destination,on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"Feedback from {self.user} for {self.destination}"
