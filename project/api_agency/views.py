@@ -464,7 +464,7 @@ class ReportList(generics.ListAPIView):
 @permission_classes([IsAuthenticated, permissions.IsAgency])
 def agency_reservations_ov(request):
     user = request.user
-    agency = Agency.objects.get(id=1)
+    agency = Agency.objects.get(user=user)
 
     # Get current date and date a year ago
     end_date = timezone.now()
