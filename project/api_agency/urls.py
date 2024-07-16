@@ -77,9 +77,9 @@ urlpatterns = [
     path('agencies/<int:pk>/report/',views.ReportAgency.as_view()),
     #Accepts POST request to report the agency with the given pk.
 
-    path('reports/',views.ReportList.as_view())
+    path('reports/',views.ReportList.as_view()),
 
-
+    path('agency/reservations/stats', views.agency_reservations_ov, name='agency_reservations_ov'),
 
 
 ]

@@ -348,8 +348,6 @@ class Notification(models.Model):
     
     class Meta:
         ordering=['-timestamp']
-
-
     
 class Feedback(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
@@ -361,8 +359,6 @@ class Feedback(models.Model):
     def __str__(self):
         return f"Feedback from {self.user} for {self.agency}"
     
-
-
 class Report(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
     agency = models.ForeignKey(Agency,on_delete=models.CASCADE)

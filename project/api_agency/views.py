@@ -1,14 +1,19 @@
+# Django imports
 from django.utils import timezone
-from django.db.models import F
+from django.db.models import F, Count, Sum
+from dateutil.relativedelta import relativedelta
+from django.db.models.functions import ExtractMonth
 
+# Rest framework imports
 from rest_framework.decorators import api_view,permission_classes
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework import generics
 from rest_framework import status
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
+# App imports
 from api_agency import serializers
 from api_agency import permissions
 from api_agency.filters import VehcilePriceFilter
@@ -28,7 +33,7 @@ class Agencies(generics.ListCreateAPIView):
             return serializers.AgencySerializer
         else:
             return serializers.AgencyDetailSerializer
-    
+
 class AgencyDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Agency.objects.all()
     serializer_class = serializers.AgencyDetailSerializer
@@ -413,53 +418,7 @@ def get_plans(request):
     serializer = serializers.PlanSerializer(plan, many=True)
     return Response(data = serializer.data, status = status.HTTP_200_OK)
 
-# CHARGILY pay webhook
-# This webhook will be called by chargily after a successful payment
-
-# when a customer (Agency) successfully pays for an pro billing,
-# chargily inform the server to change the agency plan to pro plan 
-
-# Chargily Pay Secret key, will be used to calculate the Signature
-# api_secret_key = settings.CHARGILY_SECRET_KEY
-
-# @csrf_exempt
-# @require_POST
-# def webhook(request):
-#     # Extracting the 'signature' header from the HTTP request
-#     signature = request.headers.get('signature')
-
-#     # Getting the raw payload from the request body
-#     payload = request.body.decode('utf-8')
-
-#     # If there is no signature, ignore the request
-#     if not signature:
-#         return HttpResponse(status=400)
-
-#     # Calculate the signature
-#     computed_signature = hmac.new(api_secret_key.encode('utf-8'), payload.encode('utf-8'), hashlib.sha256).hexdigest()
-
-#     # If the calculated signature doesn't match the received signature, ignore the request
-#     if not hmac.compare_digest(signature, computed_signature):
-#         return HttpResponse(status=403)
-
-#     # If the signatures match, proceed to decode the JSON payload
-#     event = json.loads(payload)
-
-#     # Switch based on the event type
-#     if event['type'] == 'checkout.paid':
-#         checkout = event['data']
-#         # Handle the successful payment.
-#     elif event['type'] == 'checkout.failed':
-#         checkout = event['data']
-#         # Handle the failed payment.
-
-#     # Respond with a 200 OK status code to let us know that you've received the webhook
-#     return JsonResponse({}, status=200)
-
-
-
 #Feedbacks and Reports
-
 class FeedbackListCreate(generics.ListCreateAPIView):
     serializer_class = serializers.FeedbackSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,IsDefaultOrReadOly,CanRateAndFeedback]
@@ -500,3 +459,46 @@ class ReportList(generics.ListAPIView):
     serializer_class = serializers.ReportSerializer
     queryset = Report.objects.all()
     permission_classes = [IsAuthenticated,]
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, permissions.IsAgency])
+def agency_reservations_ov(request):
+    user = request.user
+    agency = Agency.objects.get(id=1)
+
+    # Get current date and date a year ago
+    end_date = timezone.now()
+    start_date = end_date - relativedelta(years=1)
+
+    # Aggregate reservation data for the past year
+    reservations = Reservation.objects.filter(
+        agency=agency,
+        start_date__range=[start_date, end_date]
+    ).annotate(
+        # Extract the month from the created_at field + add it to the response month
+        month = ExtractMonth('start_date')
+    ).values('month').annotate(
+        # add two more firlds total_price and reservation_count to response
+        total_price=Sum('total_price'),
+        reservation_count= Count('id')
+    ).order_by('month')
+
+    # Initialize a dictionary for all months in the past year
+    monthly_data = {}
+    for month_offset in range(start_date.month, start_date.month + 12):
+        month = (month_offset % 12) + 1
+        monthly_data[month] = {'month': month, 'total_price': 0, 'reservation_count': 0}
+    
+    # Update the monthly_data with actual data from the query results > reservations
+    for res in reservations:
+        monthly_data[res['month']].update({
+            'total_price': res['total_price'],
+            'reservation_count': res['reservation_count']
+        })
+
+    monthly_data_values = list(monthly_data.values())
+
+    # Serialize the data
+    reservation_serializer = serializers.MonthlyReservationDataSerializer(monthly_data_values  , many=True)
+
+    return Response(reservation_serializer.data, status=status.HTTP_200_OK)

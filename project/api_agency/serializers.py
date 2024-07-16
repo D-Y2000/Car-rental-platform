@@ -429,8 +429,12 @@ class CreateReportSerializer(serializers.ModelSerializer):
         except Agency.DoesNotExist:
             raise serializers.ValidationError("Agency with ID {} does not exist".format(agency_pk))
 
-
 class ReportSerializer(serializers.ModelSerializer):
     class Meta : 
         model = Report
         fields = "__all__"
+
+class MonthlyReservationDataSerializer(serializers.Serializer):
+    month = serializers.IntegerField()
+    total_price = serializers.DecimalField(max_digits=8, decimal_places=2)
+    reservation_count = serializers.IntegerField()
