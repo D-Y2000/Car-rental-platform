@@ -333,6 +333,10 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # a new field that indecates whene the reservation is traited by the agency accepted or refused
+    treated_at = models.DateTimeField(null=True, blank=True)
+
+
     def __str__(self) -> str:
         return f"Reservation by {self.client.first_name} for {self.vehicle.get_title()}"
     

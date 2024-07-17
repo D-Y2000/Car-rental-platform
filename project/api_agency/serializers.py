@@ -438,3 +438,9 @@ class MonthlyReservationDataSerializer(serializers.Serializer):
     month = serializers.IntegerField()
     total_price = serializers.DecimalField(max_digits=8, decimal_places=2)
     reservation_count = serializers.IntegerField()
+
+class DailyReservationDataSerializer(serializers.Serializer):
+    month = serializers.IntegerField()
+    day = serializers.IntegerField()
+    total_price = serializers.FloatField()
+    reservation_count = serializers.IntegerField()
