@@ -585,3 +585,131 @@ def agency_reservations_yearly_by_day(request):
 
     return Response(reservation_serializer.data, status=status.HTTP_200_OK)
 # ***** End of Agency reservations Statistics *****
+
+# ***** Branch reservations Statistics *****
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, permissions.IsAgency])
+def branch_reservations_stats(request, pk):
+    # Get the type of aggregation from the query parameters
+    aggregation_type = request.GET.get('type')
+    
+    if aggregation_type == 'yearly_by_month':
+        return branch_reservations_yearly_by_month(request, pk)
+    elif aggregation_type == 'yearly_by_day':
+        return branch_reservations_yearly_by_day(request, pk)
+    # elif aggregation_type == 'monthly_by_day':
+    #     return agency_reservations_yearly_by_day(request)
+    else:
+        return Response({'error': 'Invalid aggregation type'}, status=status.HTTP_400_BAD_REQUEST)
+
+# > Yearly Aggregation by Month
+def branch_reservations_yearly_by_month(request, pk):
+    user=request.user
+    agency=Agency.objects.get(user=user)
+    branch = Branch.objects.get(agency=agency, pk=pk)
+
+    reservation_status = request.GET.get('status', None) # accepted or refused
+
+    # Get current date and date a year ago
+    end_date = timezone.now()
+    start_date = end_date - relativedelta(years=1)
+
+    # Aggregate reservation data for the past year
+    reservations = Reservation.objects.filter(
+        agency = agency,
+        branch = branch,
+        treated_at__range = [start_date, end_date],   
+    )
+
+    if reservation_status is not None:
+        reservations = reservations.filter(status=reservation_status)
+    
+    reservations = reservations.annotate(
+        # Extract the month from the created_at field + add it to the response month
+        month = ExtractMonth('treated_at')
+    ).values('month').annotate(
+        # add two more firlds total_price and reservation_count to response
+        total_price=Sum('total_price'),
+        reservation_count= Count('id')
+    ).order_by('month')
+
+    # Initialize a dictionary for all months in the past year
+    monthly_data = {}
+    for month_offset in range(start_date.month, start_date.month + 12):
+        month = (month_offset % 12) + 1
+        monthly_data[month] = {'month': month, 'total_price': 0, 'reservation_count': 0}
+    
+    # Update the monthly_data with actual data from the query results > reservations
+    for res in reservations:
+        monthly_data[res['month']].update({
+            'total_price': res['total_price'],
+            'reservation_count': res['reservation_count']
+        })
+
+    monthly_data_values = list(monthly_data.values())
+
+    # Serialize the data
+    reservation_serializer = serializers.MonthlyReservationDataSerializer(monthly_data_values  , many=True)
+
+    return Response(reservation_serializer.data, status=status.HTTP_200_OK)
+
+# > Yearly Aggregation by Day
+def branch_reservations_yearly_by_day(request, pk):
+    user=request.user
+    agency=Agency.objects.get(user=user)
+
+    branch = Branch.objects.get(agency=agency, pk=pk)
+
+    reservation_status = request.GET.get('status', None) # accepted or refused
+
+    end_date = timezone.now()
+    start_date = end_date - relativedelta(years=1)
+
+    reservations = Reservation.objects.filter(
+        agency=agency,
+        branch=branch,
+        treated_at__range=[start_date, end_date]
+    )
+
+    if reservation_status is not None:
+        reservations = reservations.filter(status=reservation_status)
+    
+    reservations = reservations.annotate(
+        day=ExtractDay('treated_at'),
+        month=ExtractMonth('treated_at')
+    ).values('month', 'day').annotate(
+        total_price=Sum('total_price'),
+        reservation_count=Count('id')
+    ).order_by('month', 'day')
+
+    # Initialize a dictionary for all days in the past year
+    from collections import defaultdict
+    yearly_data = defaultdict(lambda: {'total_price': 0, 'reservation_count': 0})
+
+    # Fill in actual reservation data
+    for res in reservations:
+        day_key = f"{res['month']:02d}-{res['day']:02d}"
+        yearly_data[day_key].update({
+            'total_price': res['total_price'],
+            'reservation_count': res['reservation_count']
+        })
+    
+     # Generate a list of all days in the past year
+    current_date = start_date
+    all_days = []
+    while current_date <= end_date:
+        day_key = f"{current_date.month:02d}-{current_date.day:02d}"
+        daily_data = yearly_data[day_key]
+        all_days.append({
+            'month': current_date.month,
+            'day': current_date.day,
+            'total_price': daily_data['total_price'],
+            'reservation_count': daily_data['reservation_count']
+        })
+        current_date += timezone.timedelta(days=1)
+
+    # Serialize the data
+    reservation_serializer = serializers.DailyReservationDataSerializer(all_days, many=True)
+
+    return Response(reservation_serializer.data, status=status.HTTP_200_OK)
+# ***** End of Agency reservations Statistics *****
