@@ -471,11 +471,14 @@ class ReportList(generics.ListAPIView):
 def reservations_stats(request):
     # Get the type of aggregation from the query parameters
     aggregation_type = request.GET.get('type')
+
+    months = int(request.GET.get('months', 3))
+
     
     if aggregation_type == 'yearly_by_month':
         return agency_reservations_yearly_by_month(request)
-    elif aggregation_type == 'yearly_by_day':
-        return agency_reservations_yearly_by_day(request)
+    elif aggregation_type == 'monthly_by_day':
+        return agency_reservations_monthly_by_day(request, months)
     # elif aggregation_type == 'monthly_by_day':
     #     return agency_reservations_yearly_by_day(request)
     else:
@@ -530,13 +533,13 @@ def agency_reservations_yearly_by_month(request):
     return Response(reservation_serializer.data, status=status.HTTP_200_OK)
 
 # > Yearly Aggregation by Day
-def agency_reservations_yearly_by_day(request):
+def agency_reservations_monthly_by_day(request, months):
     user = request.user
     agency = Agency.objects.get(user=user)
     reservation_status = request.GET.get('status', None) # accepted or refused
 
     end_date = timezone.now()
-    start_date = end_date - relativedelta(years=1)
+    start_date = end_date - relativedelta(months=months)
 
     reservations = Reservation.objects.filter(
         agency=agency,
@@ -592,13 +595,13 @@ def agency_reservations_yearly_by_day(request):
 def branch_reservations_stats(request, pk):
     # Get the type of aggregation from the query parameters
     aggregation_type = request.GET.get('type')
+
+    months = int(request.GET.get('months', 3))
     
     if aggregation_type == 'yearly_by_month':
         return branch_reservations_yearly_by_month(request, pk)
-    elif aggregation_type == 'yearly_by_day':
-        return branch_reservations_yearly_by_day(request, pk)
-    # elif aggregation_type == 'monthly_by_day':
-    #     return agency_reservations_yearly_by_day(request)
+    elif aggregation_type == 'monthly_by_day':
+        return branch_reservations_monthly_by_day(request, pk, months)
     else:
         return Response({'error': 'Invalid aggregation type'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -654,7 +657,7 @@ def branch_reservations_yearly_by_month(request, pk):
     return Response(reservation_serializer.data, status=status.HTTP_200_OK)
 
 # > Yearly Aggregation by Day
-def branch_reservations_yearly_by_day(request, pk):
+def branch_reservations_monthly_by_day(request, pk, months):
     user=request.user
     agency=Agency.objects.get(user=user)
 
@@ -663,7 +666,7 @@ def branch_reservations_yearly_by_day(request, pk):
     reservation_status = request.GET.get('status', None) # accepted or refused
 
     end_date = timezone.now()
-    start_date = end_date - relativedelta(years=1)
+    start_date = end_date - relativedelta(months=months)
 
     reservations = Reservation.objects.filter(
         agency=agency,
