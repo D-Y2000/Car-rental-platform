@@ -79,7 +79,7 @@ urlpatterns = [
 
     path('reports/',views.ReportList.as_view()),
 
-    path('agency/reservations/stats', views.reservations_stats, name='reservations_stats'),
-
-
+    # statistics
+    path('agency/reservations/stats', views.reservations_stats, name='agency_reservations_stats'),
+    path('branch/<int:pk>/reservations/stats', views.branch_reservations_stats, name='branch_reservations_stats'),
 ]
