@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'payments.apps.PaymentsConfig',
     'api_destination.apps.ApiDestinationConfig',
     'api_activity.apps.ApiActivityConfig',
+    'api_admin.apps.ApiAdminConfig',
 ]
 
 REST_FRAMEWORK = {
