@@ -342,7 +342,7 @@ class TransmissionSerializer(serializers.ModelSerializer):
 class VehicleDetailsSerializer(serializers.ModelSerializer):
     make=MakeSerializer()
     model=ModelSerializer()
-    engine=EnergySerializer
+    engine=EnergySerializer()
     transmission=TransmissionSerializer()
     type=TypeSerializer()
     options=TypeSerializer(many=True)
