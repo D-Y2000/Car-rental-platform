@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Order</title>
+    <style>
+      .bg-gray-100 {
+        background-color: #f7fafc;
+      }
+      .text-gray-700 {
+        color: #4a5568;
+      }
+      .text-gray-900 {
+        color: #1a202c;
+      }
+      .text-lg {
+        font-size: 1.125rem;
+      }
+      .font-semibold {
+        font-weight: 600;
+      }
+      .p-6 {
+        padding: 1.5rem;
+      }
+      .rounded-lg {
+        border-radius: 0.5rem;
+      }
+      .shadow-lg {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .mt-4 {
+        margin-top: 1rem;
+      }
+      .text-center {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 text-gray-700">
+    <div class="container p-6 rounded-lg shadow-lg bg-white">
+      <h1 class="text-center text-gray-900 text-lg font-semibold">
+        New Order Notification
+      </h1>
+      <p class="mt-4">Hello {{ user.first_name }},</p>
+      <p>A new order has been made for the vehicle.</p>
+      <p>Reservation ID: {{ reservation.id }}</p>
+      <p>Please confirm or refuse it</p>
+      <p>Thank you,</p>
+      <p>TTRIGG team</p>
+    </div>
+  </body>
+</html>

@@ -3,31 +3,52 @@ from django.dispatch import receiver, Signal
 from api_agency.models import Notification,Reservation,Rate,Subscription,Plan,Branch,Vehicle,Agency,NewSubscription
 from django.db.models import Avg
 from django.core.mail import send_mail,EmailMessage
+from django.template.loader import render_to_string
 
 
 @receiver(signal=post_save,sender=Reservation)
 def OrderNotification(sender,instance,created,**kwargs):
     if created : 
+        # Send an email to the agency (vehicle owner)
         user = instance.branch.agency.user
         message = 'A new order is made'
         reservation = instance
-    #     email = EmailMessage(
-    #     subject='Reservation - info',
-    #     body=f"A new order has been made for the vehicle",
-    #     to=[user.email],
-    # )
+
+        subject = 'Reservation - New Order'
+        html_content = render_to_string("emails/new_order.html", {
+            'user': 'user',
+            'reservation': reservation
+        })
+        email = EmailMessage(
+            subject = subject,
+            body = html_content,
+            to=[user.email]
+        )
+
+        email.content_subtype = "html"
+        email.send()
         
     elif instance.status != 'postponed' :
+        # Send an email to the client
         user = instance.client.user
         message = 'Your order has been processed.'
         reservation = instance
+
+        subject = 'Reservation - Order Processed'
+        html_content = render_to_string("emails/order_processed.html", {
+            'user': 'user',
+            'reservation': reservation
+        })
         email = EmailMessage(
-        subject='Reservation - info',
-        body=f"Your order for the vehicle has been {instance.status}",
-        to=[user.email],
-    )
+            subject = subject,
+            body = html_content,
+            to=[user.email]
+        )
+
+        email.content_subtype = "html"
         email.send()
-    notification = Notification.objects.create(user=user,message=message,reservation = reservation)
+
+    Notification.objects.create(user = user, message = message, reservation = reservation)
     
 
 @receiver(signal=post_save,sender=Rate)
