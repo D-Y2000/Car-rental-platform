@@ -227,9 +227,9 @@ class BranchSerializer(serializers.ModelSerializer):
         # *** Add location ***
         # Set location manually
         # Note that location in frontend like this => {...prevdata, location:{lat: 36.8065, lng: 10.1815}}
-        # location_data = validated_data.pop('location', {})
-        # branch.latitude = location_data.get('lat', None)
-        # branch.longitude = location_data.get('lng', None)
+        location_data = validated_data.pop('location', {})
+        branch.latitude = location_data.get('lat', None)
+        branch.longitude = location_data.get('lng', None)
 
         branch.save()
         return branch
