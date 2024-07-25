@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import generics
 from api_destination.models import *
@@ -8,7 +9,9 @@ from api_main.permissions import IsDefaultOrReadOly,IsDefault
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
-
+from django.db.models import Q
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 # Create your views here.
 
 # class ListCreateDestinationCategory(generics.ListCreateAPIView):
@@ -78,3 +81,12 @@ class FeedbackDetails(generics.RetrieveUpdateDestroyAPIView):
         else:
             return FeedbackSerializer
     
+
+@api_view(['GET'])
+def destinationssearchAutoComplete(request):
+    query = request.GET.get('q')
+    if query :
+        suggestions = Destination.objects.filter(Q(name__icontains = query) | Q(description__icontains = query) | Q(address__icontains = query) | Q(wilaya__name__icontains = query)).values('id','name')
+    else:
+        suggestions = []
+    return Response(suggestions)

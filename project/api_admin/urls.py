@@ -43,8 +43,18 @@ urlpatterns = [
     #views to manage activities feedbacks
     path('activities/feedbacks/',AdminActivityFeedbacks.as_view()),
     path('activities/feedbacks/<int:pk>/',AdminActivityFeedbacksDetails.as_view()),#retreive and delete the feedback
-    
+      #views to manage reports.
+    path('reports/',AdminReportsList.as_view()),
+    path('reports/<int:pk>/',AdminReportsDetails.as_view()),#retreive and delete the feedback
 
 
+
+
+    path('stats/users/',users_stats),
+    path('stats/reservations/',RervationsStats.as_view()),
+    # path('stats/reservations/filter/',reservation_stats),
+    path('stats/reservations/status/',reservations_status_stats),
+    path('stats/income/',all_subscriptions_income_stats),
+    path('stats/income/year/',yearly_subscriptions_income_stats),
     
 ]

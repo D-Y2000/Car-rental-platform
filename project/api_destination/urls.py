@@ -16,4 +16,5 @@ urlpatterns = [
     #Accepts POST request and create a feedback for the destination with the given pk.
     path('destinations/feedback/<int:pk>/',FeedbackDetails.as_view()),
     #Acceptes GET,PUT,PATCH and DELETE requests and returns the feedback the given pk.
+    path('destinations/search_suggestions/',destinationssearchAutoComplete),
 ]
