@@ -176,7 +176,6 @@ def vehicles_models(request,pk):
 class ListVehicles(generics.ListCreateAPIView):
     permission_classes=[IsAuthenticatedOrReadOnly,permissions.IsAgencyOrReadOnly,permissions.IsBranchOwner,permissions.CanCreateVehicle]
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
-    filterset_fields = ['owned_by__wilaya','engine','transmission','type','options']
     filterset_class = VehcilePriceFilter
     search_fields = ['make__name','model__name','engine__name','transmission__name','type__name','options__name']
     def get_serializer_class(self):
@@ -188,12 +187,6 @@ class ListVehicles(generics.ListCreateAPIView):
 
     def  get_queryset(self):
         vehicles=Vehicle.objects.filter(is_available = True,is_deleted = False, is_locked = False).order_by('-owned_by__agency__rate')
-        min_price = self.request.GET.get('min_price')
-        max_price = self.request.GET.get('max_price')
-        if min_price :
-            vehicles = vehicles.filter(price__gte=min_price)
-        if max_price :
-            vehicles = vehicles.filter(price__lte=max_price)
         return vehicles
     
 
