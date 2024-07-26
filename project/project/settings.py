@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'api_destination.apps.ApiDestinationConfig',
     'api_activity.apps.ApiActivityConfig',
     'api_admin.apps.ApiAdminConfig',
+    'api_excursions.apps.ApiAdminConfig',
 ]
 
 REST_FRAMEWORK = {
