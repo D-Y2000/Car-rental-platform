@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 from api_agency.models import Wilaya
@@ -28,10 +29,11 @@ class Location(models.Model):
         return f'{self.wilaya.name} - {self.order}'
 
 class Excursion(models.Model):
-    organizer = models.ForeignKey(ExcursionOrganizer, on_delete=models.CASCADE)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organizer = models.ForeignKey(ExcursionOrganizer, on_delete=models.CASCADE, related_name='excursions')
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     
     starting_date = models.DateTimeField(blank=True, null=True)
     ending_date = models.DateTimeField(blank=True, null=True)
