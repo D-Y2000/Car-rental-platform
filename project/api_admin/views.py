@@ -19,7 +19,8 @@ from rest_framework.decorators import api_view
 from django.db.models import Sum,Count
 from django.db.models.functions import TruncYear,TruncMonth
 from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
+from api_admin.filters import ClientAgeFilter
+
 
 # Create your views here.
 
@@ -286,69 +287,110 @@ def users_stats(request):
             "perc_clientsr":perc_clients,
         }
         return Response(result, status = status.HTTP_200_OK)      
-    
+
+# @api_view(['GET'])
+# def reservations_status_stats(request):
+#     if request.method == 'GET':
+#         wilaya_pk = request.GET.get('wilaya')
+#         all_reservations = total_reservations = Reservation.objects.all()
+#         total_accepted_reservations = total_reservations.filter(status = 'accepted').count()
+#         total_refused_reservations = total_reservations.filter(status = 'refused').count()
+#         total_postponed_reservations = total_reservations.filter(status = 'postponed').count()
+#         #calculate percentage
+#         perc_total_reservations = 100
+#         total_reservations = total_reservations.count()
+#         perc_total_accepted_reservations = total_accepted_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
+#         perc_total_refused_reservations = total_refused_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
+#         perc_total_postponed_reservations = total_postponed_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
+#         result = {
+#             "total_reservations":total_reservations,
+#             "total_accepted_reservations":total_accepted_reservations,
+#             "total_refused_reservations":total_refused_reservations,
+#             "total_postponed_reservations":total_postponed_reservations,
+#             "perc_total_reservations":perc_total_reservations,
+#             "perc_total_accepted_reservations":perc_total_accepted_reservations,
+#             "perc_total_refused_reservations":perc_total_refused_reservations,
+#             "perc_total_postponed_reservations":perc_total_postponed_reservations,
+#         }
+#         if wilaya_pk:
+#             wilaya_reservations = all_reservations.filter(branch__wilaya = wilaya_pk)
+#             wilaya_aceepted_reservations = wilaya_reservations.filter(status = 'accepted').count()
+#             wilaya_refused_reservations = wilaya_reservations.filter(status = 'refused').count()  
+#             wilaya_postponed_reservations = wilaya_reservations.filter(status = 'postponed').count()  
+#             perc_all_wilaya_reservations = 100
+#             wilaya_reservations = wilaya_reservations.count()
+#             #calculate percentage
+#             perc_wilaya_accepted_reservations = wilaya_aceepted_reservations * perc_all_wilaya_reservations / wilaya_reservations if wilaya_reservations > 0 else 0
+#             perc_wilaya_refused_reservations = wilaya_refused_reservations * perc_all_wilaya_reservations / wilaya_reservations if wilaya_reservations > 0 else 0
+#             perc_wilaya_postponed_reservations = wilaya_postponed_reservations * perc_all_wilaya_reservations / wilaya_reservations if wilaya_reservations > 0 else 0
+#             #calculate the percentage of the given wilaya reservations from all the reservations.
+#             perc_contrib_wilaya_reservations = wilaya_reservations * 100 / total_reservations if total_reservations > 0 else 0
+#             #add data to the json 
+#             result['wilaya_reservations'] = wilaya_reservations
+#             result['wilaya_aceepted_reservations'] = wilaya_aceepted_reservations
+#             result['wilaya_refused_reservations'] = wilaya_refused_reservations
+#             result['wilaya_postponed_reservations'] = wilaya_postponed_reservations
+#             result['perc_contrib_wilaya_reservations'] = perc_contrib_wilaya_reservations
+#             result['perc_all_wilaya_reservations'] = perc_all_wilaya_reservations
+#             result['perc_wilaya_accepted_reservations'] = perc_wilaya_accepted_reservations
+#             result['perc_wilaya_refused_reservations'] = perc_wilaya_refused_reservations
+#             result['perc_wilaya_postponed_reservations'] = perc_wilaya_postponed_reservations
+
+
+#         return Response(result, status = status.HTTP_200_OK)
+from datetime import date, timedelta
 @api_view(['GET'])
-def reservations_status_stats(request):
+def reservations_stats(request):
     if request.method == 'GET':
-        wilaya_pk = request.GET.get('wilaya')
-        all_reservations = total_reservations = Reservation.objects.all()
-        total_accepted_reservations = total_reservations.filter(status = 'accepted').count()
-        total_refused_reservations = total_reservations.filter(status = 'refused').count()
-        total_postponed_reservations = total_reservations.filter(status = 'postponed').count()
+        reservations = total_reservations = Reservation.objects.all()
+        wilaya = request.GET.get('wilaya') 
+        if wilaya:
+            reservations = reservations.filter(branch__wilaya = wilaya)
+        # reservation_status = request.GET.get('status')
+        # if reservation_status:
+        #     reservations = reservations.filter(status = reservation_status)
+        gender = request.GET.get('gender')
+        if gender :
+            reservations = reservations.filter(client__gender = gender)
+        min_age = request.GET.get('min_age')
+        if min_age:
+            today = date.today()
+            print(f"today = {today}")
+            min_birth_date = today - timedelta(days=int(min_age)*365)
+            print(f"min_birth_date = {min_birth_date}")
+            reservations = reservations.filter(client__date_of_birth__gte=min_birth_date)
+        max_age = request.GET.get('max_age')
+        if max_age:
+            today = date.today()
+            print(f"today = {today}")   
+            max_birth_date = today - timedelta(days=(int(max_age))*365)
+            print(f"max_birth_date = {max_birth_date}")
+            reservations = reservations.filter(client__date_of_birth__lte=max_birth_date)
+
+        total_accepted_reservations = reservations.filter(status = 'accepted').count()
+        total_refused_reservations = reservations.filter(status = 'refused').count()
+        total_postponed_reservations = reservations.filter(status = 'postponed').count()
         #calculate percentage
         perc_total_reservations = 100
         total_reservations = total_reservations.count()
         perc_total_accepted_reservations = total_accepted_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
         perc_total_refused_reservations = total_refused_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
         perc_total_postponed_reservations = total_postponed_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
+
+        
         result = {
             "total_reservations":total_reservations,
             "total_accepted_reservations":total_accepted_reservations,
             "total_refused_reservations":total_refused_reservations,
             "total_postponed_reservations":total_postponed_reservations,
-            "perc_total_reservations":perc_total_reservations,
             "perc_total_accepted_reservations":perc_total_accepted_reservations,
             "perc_total_refused_reservations":perc_total_refused_reservations,
             "perc_total_postponed_reservations":perc_total_postponed_reservations,
         }
-        if wilaya_pk:
-            wilaya_reservations = all_reservations.filter(branch__wilaya = wilaya_pk)
-            wilaya_aceepted_reservations = wilaya_reservations.filter(status = 'accepted').count()
-            wilaya_refused_reservations = wilaya_reservations.filter(status = 'refused').count()  
-            wilaya_postponed_reservations = wilaya_reservations.filter(status = 'postponed').count()  
-            perc_all_wilaya_reservations = 100
-            wilaya_reservations = wilaya_reservations.count()
-            #calculate percentage
-            perc_wilaya_accepted_reservations = wilaya_aceepted_reservations * perc_all_wilaya_reservations / wilaya_reservations if wilaya_reservations > 0 else 0
-            perc_wilaya_refused_reservations = wilaya_refused_reservations * perc_all_wilaya_reservations / wilaya_reservations if wilaya_reservations > 0 else 0
-            perc_wilaya_postponed_reservations = wilaya_postponed_reservations * perc_all_wilaya_reservations / wilaya_reservations if wilaya_reservations > 0 else 0
-            #calculate the percentage of the given wilaya reservations from all the reservations.
-            perc_contrib_wilaya_reservations = wilaya_reservations * 100 / total_reservations if total_reservations > 0 else 0
-            #add data to the json 
-            result['wilaya_reservations'] = wilaya_reservations
-            result['wilaya_aceepted_reservations'] = wilaya_aceepted_reservations
-            result['wilaya_refused_reservations'] = wilaya_refused_reservations
-            result['wilaya_postponed_reservations'] = wilaya_postponed_reservations
+        if wilaya:
+            perc_contrib_wilaya_reservations = reservations.count() * 100 / total_reservations if total_reservations > 0 else 0
             result['perc_contrib_wilaya_reservations'] = perc_contrib_wilaya_reservations
-            result['perc_all_wilaya_reservations'] = perc_all_wilaya_reservations
-            result['perc_wilaya_accepted_reservations'] = perc_wilaya_accepted_reservations
-            result['perc_wilaya_refused_reservations'] = perc_wilaya_refused_reservations
-            result['perc_wilaya_postponed_reservations'] = perc_wilaya_postponed_reservations
-
-
         return Response(result, status = status.HTTP_200_OK)
-from api_admin.filters import ClientAgeFilter
-class RervationsStats(generics.ListAPIView):
-    queryset = Reservation.objects.all()
-    serializer_class = AdminReservationSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = ClientAgeFilter
-# @api_view(['GET'])
-# def reservation_stats(request):
-#     reservations = RervationsStats.as_view()
-#     result = {"reservations":reservations}
-#     return Response(result, status = status.HTTP_200_OK)
-
 @api_view(['GET'])
 def all_subscriptions_income_stats(request):
 

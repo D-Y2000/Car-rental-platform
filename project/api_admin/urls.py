@@ -51,9 +51,7 @@ urlpatterns = [
 
 
     path('stats/users/',users_stats),
-    path('stats/reservations/',RervationsStats.as_view()),
-    # path('stats/reservations/filter/',reservation_stats),
-    path('stats/reservations/status/',reservations_status_stats),
+    path('stats/reservations/',reservations_stats),
     path('stats/income/',all_subscriptions_income_stats),
     path('stats/income/year/',yearly_subscriptions_income_stats),
     

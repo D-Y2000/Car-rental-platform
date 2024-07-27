@@ -1,7 +1,7 @@
 from django.db import models
 import datetime
 from django.contrib.auth import get_user_model
-
+from datetime import date
 User = get_user_model()
 
 class Profile(models.Model):
