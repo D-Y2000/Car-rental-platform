@@ -221,13 +221,13 @@ class BranchSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         agency = Agency.objects.get(user=user)
         validated_data['agency'] = agency
-
+        location_data = validated_data.pop('location', {})
         branch = Branch.objects.create(**validated_data)
         
         # *** Add location ***
         # Set location manually
         # Note that location in frontend like this => {...prevdata, location:{lat: 36.8065, lng: 10.1815}}
-        location_data = validated_data.pop('location', {})
+        
         branch.latitude = location_data.get('lat', None)
         branch.longitude = location_data.get('lng', None)
 
