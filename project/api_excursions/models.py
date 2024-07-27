@@ -11,14 +11,21 @@ class ExcursionOrganizer(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     logo_url = models.URLField(null=True, blank=True)
-    # Todo add contact info
+    # Todo add contact information
 
-class Option(models.Model):
-    name = models.CharField(max_length=100)
-    def __str__(self) -> str:
-        return self.name
-    class Meta:
-        ordering = ['name']
+# This model "Location" is global
+# Todo change the location of this model to another app for a better organization
+class Location(models.Model):
+    wilaya = models.ForeignKey(Wilaya, on_delete=models.CASCADE, related_name='my_locations', blank=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True) #Optional
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return f'{self.wilaya.name} - {self.order}'
+    def getTitle(self):
+        return f'{self.wilaya.name} - {self.order}'
 
 class Excursion(models.Model):
     organizer = models.ForeignKey(ExcursionOrganizer, on_delete=models.CASCADE)
@@ -26,14 +33,14 @@ class Excursion(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     
-    options = models.ManyToManyField(Option, blank=True)
+    starting_date = models.DateTimeField(blank=True, null=True)
+    ending_date = models.DateTimeField(blank=True, null=True)
 
-    starting_point = models.ForeignKey('Destination', on_delete=models.CASCADE, related_name='starting_point')
-    ending_point = models.ForeignKey('Destination', on_delete=models.CASCADE, related_name='ending_point')
-    starting_date = models.DateTimeField(blank=True)
-    ending_date = models.DateTimeField(blank=True)
+    locations = models.ManyToManyField(Location, through='ExcursionLocation')
 
+    # Todo add a field for the duration of the excursion
     # Todo add images
+    # Todo add options (like lunch, dinner, etc)
     # Todo add reviews
 
     views_count = models.PositiveIntegerField(default=0)
@@ -44,19 +51,25 @@ class Excursion(models.Model):
         return self.title
 
 # This model is used to store the destinations of an excursion (only)
-class Destination(models.Model):
-    excursion = models.ForeignKey(Excursion, on_delete=models.CASCADE, related_name='destinations')
-    wilaya = models.foreignKey(Wilaya, on_delete=models.CASCADE)
-    latitude = models.FloatField(blank=True)
-    longitude = models.FloatField(blank=True)
-    order = models.PositiveIntegerField(default=0)
+class ExcursionLocation(models.Model):
+    MEETING_POINT = 'meeting' # ay bayna
+    DROP_OFF_POINT = 'drop_off' # ay bayna
+    DESTINATION = 'destination' # Represents the destinations of the excursion destination 1, 2, 3 and so on
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    POINT_TYPE_CHOICES = [
+        (MEETING_POINT, 'Meeting Point'),
+        (DROP_OFF_POINT, 'Drop-off Point'),
+        (DESTINATION, 'Destination'),
+    ]
+
+    excursion = models.ForeignKey(Excursion, on_delete=models.CASCADE, related_name='excursion_locations')
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='excursion_locations')
+    point_type = models.CharField(max_length=20, choices=POINT_TYPE_CHOICES, default=DESTINATION)
+    order = models.PositiveIntegerField(default=0)
+    time = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['order']  # Ensures ordering by the 'order' field
 
     def __str__(self):
-        return f'{self.excursion.title} - {self.wilaya.name} - {self.order}'
-    
-    class Meta:
-        unique_together = ('excursion', 'order') # ma3natha mykonch fiha duplicated destination m3a same order
-        ordering = ['order']
+        return f"{self.excursion.title} - {self.location.getTitle()} ({self.get_point_type_display()})"
