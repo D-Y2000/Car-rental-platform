@@ -9,7 +9,7 @@ from api_agency.models import Wilaya
 User = get_user_model()
 
 class ExcursionOrganizer(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name='excursion_organizer')
     name = models.CharField(max_length=100)
     logo_url = models.URLField(null=True, blank=True)
     # Todo add contact information
