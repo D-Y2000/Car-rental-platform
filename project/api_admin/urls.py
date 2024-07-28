@@ -54,5 +54,6 @@ urlpatterns = [
     path('stats/reservations/',reservations_stats),
     path('stats/income/',all_subscriptions_income_stats),
     path('stats/income/year/',yearly_subscriptions_income_stats),
+    path('stats/income/agencies/',agencies_income_stats),
     
 ]

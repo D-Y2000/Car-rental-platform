@@ -18,8 +18,7 @@ import api_activity.serializers as api_acticity_serializers
 from rest_framework.decorators import api_view
 from django.db.models import Sum,Count
 from django.db.models.functions import TruncYear,TruncMonth
-from rest_framework import filters
-from api_admin.filters import ClientAgeFilter
+from datetime import date, timedelta
 
 
 # Create your views here.
@@ -342,13 +341,13 @@ from datetime import date, timedelta
 @api_view(['GET'])
 def reservations_stats(request):
     if request.method == 'GET':
-        reservations = total_reservations = Reservation.objects.all()
+        all_reservations = reservations =  Reservation.objects.all()
         wilaya = request.GET.get('wilaya') 
         if wilaya:
             reservations = reservations.filter(branch__wilaya = wilaya)
-        # reservation_status = request.GET.get('status')
-        # if reservation_status:
-        #     reservations = reservations.filter(status = reservation_status)
+        year = request.GET.get('year')
+        if year:
+            reservations = reservations.filter(start_date__year = year)
         gender = request.GET.get('gender')
         if gender :
             reservations = reservations.filter(client__gender = gender)
@@ -372,13 +371,17 @@ def reservations_stats(request):
         total_postponed_reservations = reservations.filter(status = 'postponed').count()
         #calculate percentage
         perc_total_reservations = 100
-        total_reservations = total_reservations.count()
+        all_reservations = all_reservations.count() #total reservations stored in the  DB
+        total_reservations = reservations.count()  #total reservations after filtering
         perc_total_accepted_reservations = total_accepted_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
         perc_total_refused_reservations = total_refused_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
         perc_total_postponed_reservations = total_postponed_reservations * perc_total_reservations / total_reservations if total_reservations > 0 else 0
-
+        #calculate income from reservations
+        reservations_income = reservations.filter(status = 'accepted').aggregate(reservations_total_income = Sum('total_price'))
+        print(reservations_income)
         
         result = {
+            "all_reservations":all_reservations,
             "total_reservations":total_reservations,
             "total_accepted_reservations":total_accepted_reservations,
             "total_refused_reservations":total_refused_reservations,
@@ -386,9 +389,11 @@ def reservations_stats(request):
             "perc_total_accepted_reservations":perc_total_accepted_reservations,
             "perc_total_refused_reservations":perc_total_refused_reservations,
             "perc_total_postponed_reservations":perc_total_postponed_reservations,
+            "accepted_reservations_total_income":reservations_income['reservations_total_income'] if total_accepted_reservations > 0 else 0
         }
+
         if wilaya:
-            perc_contrib_wilaya_reservations = reservations.count() * 100 / total_reservations if total_reservations > 0 else 0
+            perc_contrib_wilaya_reservations = total_reservations * 100 / all_reservations if all_reservations > 0 else 0
             result['perc_contrib_wilaya_reservations'] = perc_contrib_wilaya_reservations
         return Response(result, status = status.HTTP_200_OK)
 @api_view(['GET'])
@@ -455,3 +460,17 @@ def yearly_subscriptions_income_stats(request):
         }
         return Response(result,status = status.HTTP_200_OK)
     
+@api_view(['GET'])
+def agencies_income_stats(request):
+    if request.method == 'GET':
+        year = request.GET.get('year')
+        all_agencies = agencies = Agency.objects.all()
+        if year:
+            agencies = agencies.filter(my_reservations__start_date__year = year,my_subscriptions__created_at__year = year)
+        agencies_income = agencies.annotate(subscriptions_count = Count('my_subscriptions'),subscriptions_income = Sum('my_subscriptions__plan__price'),reservations_count = Count('my_reservations'),
+                                                  reservation_income = Sum('my_reservations__total_price'),).values('id','name','subscriptions_count','subscriptions_income','reservations_count','reservation_income')
+        result={
+            'agencies_income':agencies_income
+        }
+    
+    return Response(result,status = status.HTTP_200_OK)
