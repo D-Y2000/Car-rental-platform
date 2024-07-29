@@ -24,9 +24,9 @@ class Location(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
-        return f'{self.wilaya.name} - {self.order}'
+        return f'{self.wilaya.name}'
     def getTitle(self):
-        return f'{self.wilaya.name} - {self.order}'
+        return f'{self.wilaya.name}'
 
 class Excursion(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -66,12 +66,12 @@ class ExcursionLocationCreateView(generics.CreateAPIView):
             raise PermissionError("You do not have permission to add locations to this excursion.")
         serializer.save(excursion=excursion)
 
-# Retrieve an excursion with its locations
-class ExcursionDetailView(generics.RetrieveAPIView):
+# Retrieve Organizer's excursions 
+class ExcursionOrganizerExcursionsView(generics.ListAPIView):
     queryset = Excursion.objects.all()
-    serializer_class = Excursion
+    serializer_class = ExcursionDetailSerializer
     permission_classes = [IsAuthenticated]
-
+    print("ExcursionOrganizerExcursionsView")
     def get_queryset(self):
         user = self.request.user
         return Excursion.objects.filter(organizer__owner=user)
