@@ -21,6 +21,16 @@ class ExcursionOrganizerCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+class ExcursionOrganizerRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = ExcursionOrganizer.objects.all()
+    serializer_class = ExcursionOrganizerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return ExcursionOrganizer.objects.filter(owner=user).first()
+
+
 # Excursion creation following the initial step (see serializers.py)
 class ExcursionCreateView(generics.CreateAPIView):
     queryset = Excursion.objects.all()
@@ -75,3 +85,13 @@ class ExcursionOrganizerExcursionsView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Excursion.objects.filter(organizer__owner=user)
+    
+# retrieve authenticated user escursion organizer
+class ExcursionOrganizerRetrieveView(generics.ListAPIView):
+    queryset = ExcursionOrganizer.objects.all()
+    serializer_class = ExcursionOrganizerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return ExcursionOrganizer.objects.filter(owner=user)

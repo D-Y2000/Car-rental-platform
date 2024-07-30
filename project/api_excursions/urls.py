@@ -4,11 +4,13 @@ from .views import (
     ExcursionCreateView,
     ExcursionRetrieveUpdateView,
     ExcursionLocationCreateView,
-    ExcursionOrganizerExcursionsView
+    ExcursionOrganizerExcursionsView,
+    ExcursionOrganizerRetrieveView,
 )
 
 urlpatterns = [
     path('organizers/', ExcursionOrganizerCreateView.as_view(), name='excursion-organizer-create'),
+    path('organizers/me/', ExcursionOrganizerRetrieveView.as_view(), name='excursion-organizer-retrieve'),
     path('organizers/excursions/', ExcursionOrganizerExcursionsView.as_view(), name='excursion-organizer-excursions'),
     path('', ExcursionCreateView.as_view(), name='excursion-create'),
     path('<uuid:pk>/', ExcursionRetrieveUpdateView.as_view(), name='excursion-retrieve-update'),
