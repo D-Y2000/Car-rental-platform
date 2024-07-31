@@ -1,5 +1,9 @@
-from rest_framework import generics
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from .models import (
     ExcursionOrganizer,
     Excursion,
@@ -87,11 +91,10 @@ class ExcursionOrganizerExcursionsView(generics.ListAPIView):
         return Excursion.objects.filter(organizer__owner=user)
     
 # retrieve authenticated user escursion organizer
-class ExcursionOrganizerRetrieveView(generics.ListAPIView):
-    queryset = ExcursionOrganizer.objects.all()
-    serializer_class = ExcursionOrganizerSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return ExcursionOrganizer.objects.filter(owner=user)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_excursion_organizer_by_user(request):
+    user = request.user
+    organizer = get_object_or_404(ExcursionOrganizer, owner=user)
+    serializer = ExcursionOrganizerSerializer(organizer)
+    return Response(serializer.data, status=status.HTTP_200_OK)
