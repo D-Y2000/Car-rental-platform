@@ -15,6 +15,7 @@ from .serializers import (
     ExcursionUpdateSerializer,
     ExcursionLocationSerializer,
     ExcursionDetailSerializer,
+    ExcursionStatusUpdateSerializer
 )
 
 class ExcursionOrganizerCreateView(generics.CreateAPIView):
@@ -98,3 +99,23 @@ def get_excursion_organizer_by_user(request):
     organizer = get_object_or_404(ExcursionOrganizer, owner=user)
     serializer = ExcursionOrganizerSerializer(organizer)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Last step => publish excursion -> change status
+class PublishExcursionView(generics.UpdateAPIView):
+    queryset = Excursion.objects.all()
+    serializer_class = ExcursionStatusUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Excursion.objects.filter(organizer__owner=user)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = {'status': Excursion.PUBLISHED}
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+

@@ -55,7 +55,7 @@ class ExcursionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Excursion
-        fields = ['id', 'organizer', 'title', 'description', 'price', 'starting_date', 'ending_date', 'views_count', 'created_at', 'updated_at', 'meeting_points', 'destinations', 'drop_off_points']
+        fields = ['id', 'organizer', 'title', 'description', 'price', 'status', 'starting_date', 'ending_date', 'views_count', 'created_at', 'updated_at', 'meeting_points', 'destinations', 'drop_off_points']
         read_only_fields = ['id', 'views_count', 'created_at', 'updated_at', 'organizer']
 
     def get_meeting_points(self, obj):
@@ -64,3 +64,9 @@ class ExcursionDetailSerializer(serializers.ModelSerializer):
         return ExcursionLocationSerializer(obj.excursion_locations.filter(point_type=ExcursionLocation.DROP_OFF_POINT), many=True).data
     def get_destinations(self, obj):
         return ExcursionLocationSerializer(obj.excursion_locations.filter(point_type=ExcursionLocation.DESTINATION), many=True).data
+    
+# Last step => Publish the excursion
+class ExcursionStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Excursion
+        fields = ['status']

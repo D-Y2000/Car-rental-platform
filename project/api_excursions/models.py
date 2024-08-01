@@ -29,6 +29,14 @@ class Location(models.Model):
         return f'{self.wilaya.name}'
 
 class Excursion(models.Model):
+    DRAFT = 'draft'
+    PUBLISHED = 'published'
+    
+    STATUS_CHOICES = [
+        (DRAFT, 'Draft'),
+        (PUBLISHED, 'Published'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizer = models.ForeignKey(ExcursionOrganizer, on_delete=models.CASCADE, related_name='excursions')
     title = models.CharField(max_length=100)
@@ -39,6 +47,8 @@ class Excursion(models.Model):
     ending_date = models.DateTimeField(blank=True, null=True)
 
     locations = models.ManyToManyField(Location, through='ExcursionLocation')
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=DRAFT)
 
     # Todo add a field for the duration of the excursion
     # Todo add images
