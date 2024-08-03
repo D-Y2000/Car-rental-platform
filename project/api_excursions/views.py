@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
+from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ExcursionFilter
 
 from .models import (
     ExcursionOrganizer,
@@ -119,3 +121,14 @@ class PublishExcursionView(generics.UpdateAPIView):
         self.perform_update(serializer)
         return Response(serializer.data)
 
+class ExcursionListView(generics.ListAPIView):
+    queryset=Excursion.objects.filter(status=Excursion.PUBLISHED)
+    serializer_class=ExcursionDetailSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = ExcursionFilter
+    search_fields = ['title', 'description', 'excursion_locations__location__wilaya__name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(status=Excursion.PUBLISHED)

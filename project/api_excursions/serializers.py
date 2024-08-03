@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import ExcursionOrganizer, Excursion, Location, ExcursionLocation
+from api_agency.serializers import WilayaSerializer
 
 class ExcursionOrganizerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +27,7 @@ class ExcursionUpdateSerializer(serializers.ModelSerializer):
 
 # Step 3: Add excursion locations: (meeting points and destinations) to an existing excursion.
 class LocationSerializer(serializers.ModelSerializer):
+    wilaya = WilayaSerializer()
     class Meta:
         model = Location
         fields = ['wilaya', 'latitude', 'longitude', 'address']
