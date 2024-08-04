@@ -37,7 +37,6 @@ class ExcursionOrganizerRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         user = self.request.user
         return ExcursionOrganizer.objects.filter(owner=user).first()
 
-
 # Excursion creation following the initial step (see serializers.py)
 class ExcursionCreateView(generics.CreateAPIView):
     queryset = Excursion.objects.all()
@@ -54,7 +53,7 @@ class ExcursionCreateView(generics.CreateAPIView):
 # -*- OR -*- Retrieve an excursion with its locations
 class ExcursionRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Excursion.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     # hna nkhayro wchm serializer retrieve wella update apr n'jouter delete
     def get_serializer_class(self):
@@ -62,9 +61,28 @@ class ExcursionRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             return ExcursionUpdateSerializer
         return ExcursionDetailSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if (request.user.is_authenticated and instance.owner != request.user):
+            # Increment views count for non-owner users
+            instance.views_count += 1
+            instance.save()
+        
+        if(not request.user.is_authenticated):
+            instance.views_count += 1
+            instance.save()
+
+        serializer = self.get_serializer(instance)
+
+        return Response(serializer.data)
+
     def get_queryset(self):
         user = self.request.user
-        return Excursion.objects.filter(organizer__owner=user)
+        if (user.is_authenticated):
+            return Excursion.objects.filter(organizer__owner=user)
+
+        return Excursion.objects.all()
 
 # Excursion update to add Locations (meeting points and destinations) to an existing excursion.
 class ExcursionLocationCreateView(generics.CreateAPIView):

@@ -63,7 +63,8 @@ class ModelTests(TestCase):
             organizer=organizer,
             title='Test Excursion',
             description='This is a test excursion.',
-            price=100.00
+            price=1500.00,
+            places=10
         )
         
         # Check that the excursion's organizer is correct
@@ -73,7 +74,9 @@ class ModelTests(TestCase):
         # Check that the description is correct
         self.assertEqual(excursion.description, 'This is a test excursion.')
         # Check that the price is correct
-        self.assertEqual(excursion.price, 100.00)
+        self.assertEqual(excursion.price, 1500.00)
+        # check that the places is correct
+        self.assertEqual(excursion.places, 10)
 
     def test_create_excursion_location(self):
         """
