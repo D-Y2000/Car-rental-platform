@@ -64,7 +64,7 @@ class ExcursionRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        if (request.user.is_authenticated and instance.owner != request.user):
+        if (request.user.is_authenticated and instance.organizer.owner != request.user):
             # Increment views count for non-owner users
             instance.views_count += 1
             instance.save()
