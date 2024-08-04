@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import ExcursionOrganizer, Excursion, Location, ExcursionLocation
+from api_agency.serializers import WilayaSerializer
 
 class ExcursionOrganizerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,11 +22,12 @@ class ExcursionCreateSerializer(serializers.ModelSerializer):
 class ExcursionUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Excursion
-        fields = ['id', 'title', 'description', 'price', 'starting_date', 'ending_date']
+        fields = ['id', 'title', 'description', 'price', 'starting_date', 'ending_date', "places"]
         read_only_fields = ['organizer', 'id']
 
 # Step 3: Add excursion locations: (meeting points and destinations) to an existing excursion.
 class LocationSerializer(serializers.ModelSerializer):
+    wilaya = WilayaSerializer()
     class Meta:
         model = Location
         fields = ['wilaya', 'latitude', 'longitude', 'address']
@@ -55,7 +57,7 @@ class ExcursionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Excursion
-        fields = ['id', 'organizer', 'title', 'description', 'price', 'status', 'starting_date', 'ending_date', 'views_count', 'created_at', 'updated_at', 'meeting_points', 'destinations', 'drop_off_points']
+        fields = ['id', 'organizer', 'title', 'description', 'price', 'places', 'status', 'starting_date', 'ending_date', 'views_count', 'created_at', 'updated_at', 'meeting_points', 'destinations', 'drop_off_points']
         read_only_fields = ['id', 'views_count', 'created_at', 'updated_at', 'organizer']
 
     def get_meeting_points(self, obj):
