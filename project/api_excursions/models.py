@@ -31,10 +31,12 @@ class Location(models.Model):
 class Excursion(models.Model):
     DRAFT = 'draft'
     PUBLISHED = 'published'
+    COMPLETED = 'completed'
     
     STATUS_CHOICES = [
         (DRAFT, 'Draft'),
         (PUBLISHED, 'Published'),
+        (COMPLETED, 'Completed'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -42,6 +44,8 @@ class Excursion(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    places = models.PositiveIntegerField(default=0)
     
     starting_date = models.DateTimeField(blank=True, null=True)
     ending_date = models.DateTimeField(blank=True, null=True)

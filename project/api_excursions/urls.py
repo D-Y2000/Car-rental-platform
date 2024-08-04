@@ -7,7 +7,8 @@ from .views import (
     ExcursionOrganizerExcursionsView,
     PublishExcursionView,
     get_excursion_organizer_by_user,
-    ExcursionListView
+    ExcursionListView,
+    ChnageExcursionStatus
 )
 
 urlpatterns = [
@@ -19,5 +20,6 @@ urlpatterns = [
     path('<uuid:pk>/', ExcursionRetrieveUpdateView.as_view(), name='excursion-retrieve-update'),
     path('<uuid:pk>/locations/', ExcursionLocationCreateView.as_view(), name='excursion-location-create'),
     path('<uuid:pk>/publish/', PublishExcursionView.as_view(), name='publish-excursion'),
+    path('<uuid:pk>/chnage-status/', ChnageExcursionStatus.as_view(), name='excursion-chnage-status'),
     
 ]

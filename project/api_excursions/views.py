@@ -132,3 +132,26 @@ class ExcursionListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(status=Excursion.PUBLISHED)
+
+class ChnageExcursionStatus(generics.UpdateAPIView):
+    queryset = Excursion.objects.all()
+    serializer_class = ExcursionStatusUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Excursion.objects.filter(organizer__owner=user)
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        status_value = request.data.get('status', None)
+
+        if status_value not in dict(Excursion.STATUS_CHOICES):
+            return Response({'status': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance.status = status_value
+        instance.save()
+
+        serializer = self.get_serializer(instance)
+        
+        return Response(serializer.data)
