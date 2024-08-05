@@ -15,9 +15,9 @@ from .serializers import (
     ExcursionOrganizerSerializer,
     ExcursionCreateSerializer,
     ExcursionUpdateSerializer,
-    ExcursionLocationSerializer,
     ExcursionDetailSerializer,
-    ExcursionStatusUpdateSerializer
+    ExcursionStatusUpdateSerializer,
+    CreateExcursionLocationSerializer,
 )
 
 class ExcursionOrganizerCreateView(generics.CreateAPIView):
@@ -87,7 +87,7 @@ class ExcursionRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 # Excursion update to add Locations (meeting points and destinations) to an existing excursion.
 class ExcursionLocationCreateView(generics.CreateAPIView):
     queryset = ExcursionLocation.objects.all()
-    serializer_class = ExcursionLocationSerializer
+    serializer_class = CreateExcursionLocationSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
