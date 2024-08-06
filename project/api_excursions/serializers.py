@@ -5,7 +5,7 @@ from api_agency.serializers import WilayaSerializer
 class ExcursionOrganizerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExcursionOrganizer
-        fields = ['id', 'owner', 'name', 'logo_url']
+        fields = ['id', 'owner', 'name', 'logo_url', "contact_phone"]
         read_only_fields = ['owner']  # 'owner' is read-only so it can bet set automaticly to the authenticated user
 
 

@@ -8,11 +8,13 @@ from .views import (
     PublishExcursionView,
     get_excursion_organizer_by_user,
     ExcursionListView,
-    ChnageExcursionStatus
+    ChnageExcursionStatus,
+    ExcursionOrganizerReadUpdateDelete
 )
 
 urlpatterns = [
     path('organizers/', ExcursionOrganizerCreateView.as_view(), name='excursion-organizer-create'),
+    path('organizers/<int:pk>', ExcursionOrganizerReadUpdateDelete.as_view(), name='excursion-organizer-rud'),
     path('organizers/me/', get_excursion_organizer_by_user, name='excursion-organizer-retrieve'),
     path('organizers/excursions/', ExcursionOrganizerExcursionsView.as_view(), name='excursion-organizer-excursions'),
     path('', ExcursionCreateView.as_view(), name='excursion-create'),

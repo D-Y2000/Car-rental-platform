@@ -13,6 +13,7 @@ class ExcursionOrganizer(models.Model):
     name = models.CharField(max_length=100)
     logo_url = models.URLField(null=True, blank=True)
     # Todo add contact information
+    contact_phone = models.CharField(max_length=15, blank=True)
 
 # This model "Location" is global
 # Todo change the location of this model to another app for a better organization
