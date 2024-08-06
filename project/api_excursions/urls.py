@@ -9,7 +9,8 @@ from .views import (
     get_excursion_organizer_by_user,
     ExcursionListView,
     ChnageExcursionStatus,
-    ExcursionOrganizerReadUpdateDelete
+    ExcursionOrganizerReadUpdateDelete,
+    ExcursionMediaView
 )
 
 urlpatterns = [
@@ -23,5 +24,5 @@ urlpatterns = [
     path('<uuid:pk>/locations/', ExcursionLocationCreateView.as_view(), name='excursion-location-create'),
     path('<uuid:pk>/publish/', PublishExcursionView.as_view(), name='publish-excursion'),
     path('<uuid:pk>/chnage-status/', ChnageExcursionStatus.as_view(), name='excursion-chnage-status'),
-    
+    path('<uuid:excursion_pk>/media/', ExcursionMediaView.as_view(), name='excursion-media'),  # Media endpoint    
 ]

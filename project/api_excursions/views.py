@@ -9,7 +9,8 @@ from .filters import ExcursionFilter
 from .models import (
     ExcursionOrganizer,
     Excursion,
-    ExcursionLocation
+    ExcursionLocation,
+    ExcursionMedia
 )
 from .serializers import (
     ExcursionOrganizerSerializer,
@@ -18,6 +19,7 @@ from .serializers import (
     ExcursionDetailSerializer,
     ExcursionStatusUpdateSerializer,
     CreateExcursionLocationSerializer,
+    ExcursionMediaSerializer
 )
 
 class ExcursionOrganizerCreateView(generics.CreateAPIView):
@@ -183,3 +185,14 @@ class ChnageExcursionStatus(generics.UpdateAPIView):
         serializer = self.get_serializer(instance)
         
         return Response(serializer.data)
+
+
+class ExcursionMediaView(generics.ListCreateAPIView):
+    queryset = ExcursionMedia.objects.all()
+    serializer_class = ExcursionMediaSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def perform_create(self, serializer):
+        excursion = Excursion.objects.get(pk=self.kwargs['excursion_pk'])
+        print("excursion>", excursion)
+        serializer.save(excursion=excursion)
