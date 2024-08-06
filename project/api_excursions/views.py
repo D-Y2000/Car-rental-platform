@@ -194,5 +194,33 @@ class ExcursionMediaView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         excursion = Excursion.objects.get(pk=self.kwargs['excursion_pk'])
-        print("excursion>", excursion)
         serializer.save(excursion=excursion)
+
+    def create(self, request, *args, **kwargs):
+        delete_previous = request.query_params.get('delete_previous', 'false').lower() == 'true'
+        excursion = Excursion.objects.get(pk=self.kwargs['excursion_pk'])
+
+        if delete_previous:
+            # Delete all existing media for the excursion
+            ExcursionMedia.objects.filter(excursion=excursion).delete()
+
+
+        data = request.data
+
+        # > handle multipple objects creation
+        if isinstance(data, list):
+            for media in data:
+                # add excursion id to each media object
+                media['excursion'] = excursion.id
+
+            serializer = self.get_serializer(data=data, many=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+
+            # create a respone
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        # > handle single object creation
+        else: return super().create(request, *args, **kwargs)
+
