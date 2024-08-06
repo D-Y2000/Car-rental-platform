@@ -13,6 +13,7 @@ class ExcursionOrganizer(models.Model):
     name = models.CharField(max_length=100)
     logo_url = models.URLField(null=True, blank=True)
     # Todo add contact information
+    contact_phone = models.CharField(max_length=15, blank=True)
 
 # This model "Location" is global
 # Todo change the location of this model to another app for a better organization
@@ -89,3 +90,27 @@ class ExcursionLocation(models.Model):
 
     def __str__(self):
         return f"{self.excursion.title} - {self.location.getTitle()} ({self.get_point_type_display()})"
+
+
+class ExcursionMedia(models.Model):
+    IMAGE = 'image' # ay bayna
+    VEDIO = 'video' # ay bayna
+
+    POINT_TYPE_CHOICES = [
+        (IMAGE, 'Image'),
+        (VEDIO, 'Video'),
+    ]
+    # can be image or video
+    url = models.URLField()
+    excursion = models.ForeignKey(Excursion, on_delete=models.CASCADE, related_name='media')
+    media_type = models.CharField(max_length=20, choices=POINT_TYPE_CHOICES, default=IMAGE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.media_type} - {self.excursion.title}"
+    
+    # order by image first 
+    class Meta:
+        ordering = ['media_type', 'created_at']  # Ensures ordering by the 'media_type' and then by creation date

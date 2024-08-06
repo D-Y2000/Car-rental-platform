@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import ExcursionOrganizer, Excursion, Location, ExcursionLocation
+from .models import ExcursionOrganizer, Excursion, Location, ExcursionLocation, ExcursionMedia
 from api_agency.serializers import WilayaSerializer
 
 class ExcursionOrganizerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExcursionOrganizer
-        fields = ['id', 'owner', 'name', 'logo_url']
+        fields = ['id', 'owner', 'name', 'logo_url', "contact_phone"]
         read_only_fields = ['owner']  # 'owner' is read-only so it can bet set automaticly to the authenticated user
 
 
@@ -61,17 +61,24 @@ class ReadExcursionLocationSerializer(serializers.ModelSerializer):
         model = ExcursionLocation
         fields = ['id', 'excursion', 'location', 'point_type', 'order', 'time']
         read_only_fields = ['excursion', 'id']
-    
+
+class ExcursionMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExcursionMedia
+        fields = '__all__'
+        read_only_fields = ['excursion']
+
 class ExcursionDetailSerializer(serializers.ModelSerializer):
     meeting_points = serializers.SerializerMethodField()
     drop_off_points = serializers.SerializerMethodField()
     destinations = serializers.SerializerMethodField()
     organizer = ExcursionOrganizerSerializer()
+    media = ExcursionMediaSerializer(many=True, read_only=True)
 
     class Meta:
         model = Excursion
-        fields = ['id', 'organizer', 'title', 'description', 'price', 'places', 'status', 'starting_date', 'ending_date', 'views_count', 'created_at', 'updated_at', 'meeting_points', 'destinations', 'drop_off_points']
-        read_only_fields = ['id', 'views_count', 'created_at', 'updated_at', 'organizer']
+        fields = ['id', 'organizer', 'title', 'description', 'price', 'places', 'status', 'starting_date', 'ending_date', 'views_count', 'created_at', 'updated_at', 'meeting_points', 'destinations', 'drop_off_points', "media"]
+        read_only_fields = ['id', 'views_count', 'created_at', 'updated_at', 'organizer', "media"]
 
     def get_meeting_points(self, obj):
         return ReadExcursionLocationSerializer(obj.excursion_locations.filter(point_type=ExcursionLocation.MEETING_POINT), many=True).data
